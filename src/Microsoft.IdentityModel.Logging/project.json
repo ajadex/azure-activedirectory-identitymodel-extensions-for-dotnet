@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "Includes Event Source based logging support.",
     "dependencies": { },
@@ -8,7 +8,8 @@
                 "System.Diagnostics.Tracing": "4.0.21-beta-*",
                 "System.Globalization": "4.0.11-beta-*",
                 "System.IO": "4.0.11-beta-*",
-                "System.IO.FileSystem":  "4.0.1-beta-*"
+                "System.IO.FileSystem": "4.0.1-beta-*",
+                "System.Diagnostics.StackTrace": "4.0.1-beta-*"
             }
         },
         "net451": { }

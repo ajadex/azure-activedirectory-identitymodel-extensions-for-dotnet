@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 
@@ -239,6 +240,16 @@ namespace Microsoft.IdentityModel.Logging
                 return string.Format(CultureInfo.InvariantCulture, "[{0}]{1} {2}", level.ToString(), DateTime.UtcNow.ToString(), 
                     string.Format(CultureInfo.InvariantCulture, message, args));
 
+#if DNX451
+            int stackFrameNum = 1;
+            var assemblyname = new StackFrame(stackFrameNum).GetMethod().DeclaringType.Assembly.GetName();
+            while (assemblyname.Name.Equals("Microsoft.IdentityModel.Logging"))
+            {
+                stackFrameNum++;
+                assemblyname = new StackFrame(stackFrameNum).GetMethod().DeclaringType.Assembly.GetName();
+            }
+            var messageString = string.Format(CultureInfo.InvariantCulture, "[{0}]{1}:{2}:{3} {4}", level.ToString(), DateTime.UtcNow.ToString(), assemblyname.Name, assemblyname.Version, message);
+#endif
             return string.Format(CultureInfo.InvariantCulture, "[{0}]{1} {2}", level.ToString(), DateTime.UtcNow.ToString(), message);
         }
     }
