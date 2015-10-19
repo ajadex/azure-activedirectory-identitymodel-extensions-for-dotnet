@@ -123,8 +123,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             X509SecurityKey validateKey = KeyingMaterial.X509SecurityKeySelfSigned2048_SHA256_Public;
 
             // make sure we can still validate with existing logic.
-            SigningCredentials signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.RsaSha256Signature, "foo");
-
+            SigningCredentials signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.RsaSha256Signature);
             header = new JwtHeader(signingCredentials);
             header.Add(JwtHeaderParameterNames.X5c, x5cs);
             jwtToken = new JwtSecurityToken(header, payload);
@@ -171,7 +170,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             };
 
             RunRoundTrip(createAndValidateParams, handler);
-            SigningCredentials signingCredentials = new SigningCredentials(KeyingMaterial.X509SecurityKeySelfSigned2048_SHA256, SecurityAlgorithms.RsaSha256Signature, "");
+            SigningCredentials signingCredentials = new SigningCredentials(KeyingMaterial.X509SecurityKeySelfSigned2048_SHA256, SecurityAlgorithms.RsaSha256Signature);
             X509SecurityKey verifyingKey = KeyingMaterial.X509SecurityKeySelfSigned2048_SHA256_Public;
             createAndValidateParams = new CreateAndValidateParams
             {
@@ -211,20 +210,19 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
 #endif
         }
 
-        private void RunRoundTrip(CreateAndValidateParams createandValidteParams, JwtSecurityTokenHandler handler)
+        private void RunRoundTrip(CreateAndValidateParams createandValidateParams, JwtSecurityTokenHandler handler)
         {
             SecurityToken validatedToken;
-            string jwt = handler.WriteToken(createandValidteParams.CompareTo);
-            ClaimsPrincipal principal = handler.ValidateToken(jwt, createandValidteParams.TokenValidationParameters, out validatedToken);
+            string jwt = handler.WriteToken(createandValidateParams.CompareTo);
+            ClaimsPrincipal principal = handler.ValidateToken(jwt, createandValidateParams.TokenValidationParameters, out validatedToken);
 
             // create from security descriptor
             SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor();
-            tokenDescriptor.SigningCredentials = createandValidteParams.SigningCredentials;
-            tokenDescriptor.NotBefore = createandValidteParams.CompareTo.ValidFrom;
-            tokenDescriptor.Expires    = createandValidteParams.CompareTo.ValidTo;
-            tokenDescriptor.Claims     = createandValidteParams.Claims;
-            tokenDescriptor.Issuer = createandValidteParams.CompareTo.Issuer;
-            foreach (string str in createandValidteParams.CompareTo.Audiences)
+            tokenDescriptor.NotBefore = createandValidateParams.CompareTo.ValidFrom;
+            tokenDescriptor.Expires    = createandValidateParams.CompareTo.ValidTo;
+            tokenDescriptor.Claims     = createandValidateParams.Claims;
+            tokenDescriptor.Issuer = createandValidateParams.CompareTo.Issuer;
+            foreach (string str in createandValidateParams.CompareTo.Audiences)
             {
                 if (!string.IsNullOrWhiteSpace(str))
                 {
@@ -238,9 +236,9 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                 expires: tokenDescriptor.Expires,
                 notBefore: tokenDescriptor.NotBefore,
                 subject: new ClaimsIdentity(tokenDescriptor.Claims),
-                signingCredentials: tokenDescriptor.SigningCredentials ) as JwtSecurityToken;
+                signingCredentials: createandValidateParams.SigningCredentials ) as JwtSecurityToken;
 
-            Assert.True(IdentityComparer.AreEqual(token, createandValidteParams.CompareTo), "!IdentityComparer.AreEqual( token, jwtParams.CompareTo )");
+            Assert.True(IdentityComparer.AreEqual(token, createandValidateParams.CompareTo), "!IdentityComparer.AreEqual( token, jwtParams.CompareTo )");
         }
 
         [Fact(DisplayName = "CreateAndValidateTokens: DuplicateClaims - roundtrips with duplicate claims")]
@@ -251,9 +249,9 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                 new SecurityTokenDescriptor
                 { 
                     Audience = IdentityUtilities.DefaultAudience,
-                    SigningCredentials = IdentityUtilities.DefaultAsymmetricSigningCredentials,
                     Claims = ClaimSets.DuplicateTypes(IdentityUtilities.DefaultIssuer, IdentityUtilities.DefaultIssuer),
                     Issuer = IdentityUtilities.DefaultIssuer,
+                    SignatureProvider = IdentityUtilities.DefaultAsymmetricSignatureProvider
                 });
 
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
@@ -374,7 +372,6 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             SecurityToken securityToken;
             ClaimsPrincipal principal = handler.ValidateToken(jwtToken.RawData, validationParameters, out securityToken);
             CheckForRoles(new string[] { "role1", "roles1" }, new string[] { "notrole1", "notrole2" }, principal);
-
             ClaimsIdentity expectedIdentity =
                 new ClaimsIdentity(
                     authenticationType: "Federation",
@@ -510,6 +507,5 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                 Assert.False(principal.IsInRole(unexpectedRoles[i]));
             }
         }
-
     }
 }

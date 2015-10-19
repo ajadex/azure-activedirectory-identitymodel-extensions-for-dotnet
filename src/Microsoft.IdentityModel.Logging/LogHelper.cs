@@ -51,5 +51,29 @@ namespace Microsoft.IdentityModel.Logging
             else
                 throw (Exception)Activator.CreateInstance(exceptionType, message);
         }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message) where T : Exception
+        {
+            return LogException<T>(message, EventLevel.Error, null);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        /// <param name="logLevel">Identifies the level of an event to be logged. Default is Error.</param>
+        /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        public static T LogException<T>(string message, EventLevel eventLevel, Exception innerException) where T : Exception
+        {
+            IdentityModelEventSource.Logger.Write(eventLevel, message, innerException);
+            if (innerException != null)
+                return (T)Activator.CreateInstance(typeof(T), message, innerException);
+            else
+                return (T)Activator.CreateInstance(typeof(T), message);
+        }
     }
 }

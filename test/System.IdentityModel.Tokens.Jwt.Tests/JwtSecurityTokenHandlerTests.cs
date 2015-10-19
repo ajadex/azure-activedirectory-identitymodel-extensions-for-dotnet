@@ -529,7 +529,6 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
 
             Assert.True(handler.CanValidateToken, "!handler.CanValidateToken");
             Assert.True(handler.CanWriteToken, "!handler.CanWriteToken");
-            Assert.True(handler.SignatureProviderFactory != null, "handler.SignatureProviderFactory == null");
             Assert.True(handler.TokenType == typeof(JwtSecurityToken), "handler.TokenType != typeof(JwtSecurityToken)");
         }
 

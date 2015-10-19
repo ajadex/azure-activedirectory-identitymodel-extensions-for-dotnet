@@ -40,14 +40,6 @@ namespace System.IdentityModel.Tokens.Jwt
     /// </summary>
     public class JwtSecurityToken : SecurityToken
     {
-        private JwtHeader header;
-        private string id;
-        private JwtPayload payload;
-        private string rawData;
-        private string rawHeader;
-        private string rawPayload;
-        private string rawSignature = string.Empty;
-
         /// <summary>
         /// Initializes a new instance of <see cref="JwtSecurityToken"/> from a string in JWS Compact serialized format.
         /// </summary>
@@ -124,12 +116,13 @@ namespace System.IdentityModel.Tokens.Jwt
                 LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10002, GetType() + ": rawPayload"), typeof(ArgumentException), EventLevel.Verbose);
             }
 
-            this.header = header;
-            this.payload = payload;
-            this.rawData = string.Concat(rawHeader, ".", rawPayload, ".", rawSignature);
-            this.rawHeader = rawHeader;
-            this.rawPayload = rawPayload;
-            this.rawSignature = rawSignature;
+            Header = header;
+            Payload = payload;
+            RawData = string.Concat(rawHeader, ".", rawPayload, ".", rawSignature);
+
+            RawHeader = rawHeader;
+            RawPayload = rawPayload;
+            RawSignature = rawSignature;
         }
 
         /// <summary>
@@ -151,8 +144,9 @@ namespace System.IdentityModel.Tokens.Jwt
                 LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": payload"), typeof(ArgumentNullException), EventLevel.Verbose);
             }
 
-            this.header = header;
-            this.payload = payload;
+            Header = header;
+            Payload = payload;
+            RawSignature = string.Empty;
         }
 
         /// <summary>
@@ -175,8 +169,9 @@ namespace System.IdentityModel.Tokens.Jwt
                 }
             }
 
-            this.payload = new JwtPayload(issuer: issuer, audience: audience, claims: claims, notBefore: notBefore, expires: expires);
-            this.header = new JwtHeader(signingCredentials);
+            Payload = new JwtPayload(issuer: issuer, audience: audience, claims: claims, notBefore: notBefore, expires: expires);
+            Header = new JwtHeader(signingCredentials);
+            RawSignature = string.Empty;
         }
 
         /// <summary>
@@ -185,7 +180,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>If the 'actor' claim is not found, null is returned.</remarks> 
         public string Actor
         {
-            get { return this.payload.Actort; }
+            get { return Payload.Actort; }
         }
 
         /// <summary>
@@ -194,7 +189,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>If the 'audience' claim is not found, enumeration will be empty.</remarks>
         public IEnumerable<string> Audiences
         {
-            get { return this.payload.Aud; }
+            get { return Payload.Aud; }
         }
 
         /// <summary>
@@ -203,7 +198,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks><para><see cref="Claim"/>(s) returned will NOT have the <see cref="Claim.Type"/> translated according to <see cref="JwtSecurityTokenHandler.InboundClaimTypeMap"/></para></remarks>
         public IEnumerable<Claim> Claims
         {
-            get { return this.payload.Claims; }
+            get { return Payload.Claims; }
         }
 
         /// <summary>
@@ -211,7 +206,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// </summary>
         public virtual string EncodedHeader
         {
-            get { return this.header.Base64UrlEncode(); }
+            get { return Header.Base64UrlEncode(); }
         }
 
         /// <summary>
@@ -219,16 +214,13 @@ namespace System.IdentityModel.Tokens.Jwt
         /// </summary>
         public virtual string EncodedPayload
         {
-            get { return this.payload.Base64UrlEncode(); }
+            get { return Payload.Base64UrlEncode(); }
         }
 
         /// <summary>
         /// Gets the <see cref="JwtHeader"/> associated with this instance.
         /// </summary>
-        public JwtHeader Header
-        {
-            get { return this.header; }
-        }
+        public JwtHeader Header { get; private set; }
 
         /// <summary>
         /// Gets the 'value' of the 'JWT ID' claim { jti, ''value' }.
@@ -236,7 +228,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>If the 'JWT ID' claim is not found, null is returned.</remarks>
         public override string Id
         {
-            get { return this.payload.Jti; }
+            get { return Payload.Jti; }
         }
 
         /// <summary>
@@ -245,56 +237,41 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>If the 'issuer' claim is not found, null is returned.</remarks>
         public override string Issuer
         {
-            get { return this.payload.Iss; }
+            get { return Payload.Iss; }
         }
 
         /// <summary>
         /// Gets the <see cref="JwtPayload"/> associated with this instance.
         /// </summary>
-        public JwtPayload Payload
-        {
-            get { return this.payload; }
-        }
+        public JwtPayload Payload { get; private set; }
 
         /// <summary>
         /// Gets the original raw data of this instance when it was created.
         /// </summary>
         /// <remarks>The original JSON Compact serialized format passed to one of the two constructors <see cref="JwtSecurityToken(string)"/>
         /// or <see cref="JwtSecurityToken( JwtHeader, JwtPayload, string, string, string )"/></remarks>
-        public string RawData
-        {
-            get { return this.rawData; }
-        }
+        public string RawData { get; private set; }
 
         /// <summary>
         /// Gets the original raw data of this instance when it was created.
         /// </summary>
         /// <remarks>The original JSON Compact serialized format passed to one of the two constructors <see cref="JwtSecurityToken(string)"/>
         /// or <see cref="JwtSecurityToken( JwtHeader, JwtPayload, string, string, string )"/></remarks>
-        public string RawHeader
-        {
-            get { return this.rawHeader; }
-        }
+        public string RawHeader { get; private set; }
 
         /// <summary>
         /// Gets the original raw data of this instance when it was created.
         /// </summary>
         /// <remarks>The original JSON Compact serialized format passed to one of the two constructors <see cref="JwtSecurityToken(string)"/>
         /// or <see cref="JwtSecurityToken( JwtHeader, JwtPayload, string, string, string )"/></remarks>
-        public string RawPayload
-        {
-            get { return this.rawPayload; }
-        }
+        public string RawPayload { get; private set; }
 
         /// <summary>
         /// Gets the original raw data of this instance when it was created.
         /// </summary>
         /// <remarks>The original JSON Compact serialized format passed to one of the two constructors <see cref="JwtSecurityToken(string)"/>
         /// or <see cref="JwtSecurityToken( JwtHeader, JwtPayload, string, string, string )"/></remarks>
-        public string RawSignature
-        {
-            get { return this.rawSignature; }
-        }
+        public string RawSignature { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="SecurityKey"/>s for this instance.
@@ -310,7 +287,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>if there is a <see cref="SigningCredentials"/> associated with this instance, a value will be returned.  Null otherwise.</remarks>
         public string SignatureAlgorithm
         {
-            get { return this.header.Alg; }
+            get { return Header.Alg; }
         }
 
         /// <summary>
@@ -318,18 +295,14 @@ namespace System.IdentityModel.Tokens.Jwt
         /// </summary>
         public SigningCredentials SigningCredentials
         {
-            get { return this.header.SigningCredentials; }
+            get { return Header.SigningCredentials; }
         }
 
         /// <summary>
         /// Gets or sets the <see cref="SecurityKey"/> that signed this instance.
         /// </summary>
         /// <remarks><see cref="JwtSecurityTokenHandler"/>.ValidateSignature(...) sets this value when a <see cref="SecurityKey"/> is used to successfully validate a signature.</remarks>
-        public override SecurityKey SigningKey
-        {
-            get;
-            set;
-        }
+        public override SecurityKey SigningKey { get; set; }
 
         /// <summary>
         /// Gets "value" of the 'subject' claim { sub, 'value' }.
@@ -337,10 +310,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>If the 'subject' claim is not found, null is returned.</remarks>
         public string Subject
         {
-            get
-            {
-                return this.payload.Sub;
-            }
+            get { return Payload.Sub; }
         }
 
         /// <summary>
@@ -349,7 +319,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>If the 'notbefore' claim is not found, then <see cref="DateTime.MinValue"/> is returned.</remarks>
         public override DateTime ValidFrom
         {
-            get { return this.payload.ValidFrom; }
+            get { return Payload.ValidFrom; }
         }
 
         /// <summary>
@@ -358,16 +328,16 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <remarks>If the 'expiration' claim is not found, then <see cref="DateTime.MinValue"/> is returned.</remarks>
         public override DateTime ValidTo
         {
-            get { return this.payload.ValidTo; }
+            get { return Payload.ValidTo; }
         }
 
         /// <summary>
-        /// Decodes the <see cref="JwtHeader"/> and <see cref="JwtPayload"/>
+        /// Serializes the <see cref="JwtHeader"/> and <see cref="JwtPayload"/>
         /// </summary>
         /// <returns>A string containing the header and payload in JSON format</returns>
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}.{1}", this.header.SerializeToJson(), this.payload.SerializeToJson());
+            return string.Format(CultureInfo.InvariantCulture, "{0}.{1}", Header.SerializeToJson(), Payload.SerializeToJson());
         }
 
         /// <summary>
@@ -386,10 +356,10 @@ namespace System.IdentityModel.Tokens.Jwt
             try
             {
                 IdentityModelEventSource.Logger.WriteVerbose(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10717, tokenParts[0]));
-                this.header = JwtHeader.Base64UrlDeserialize(tokenParts[0]);
+                Header = JwtHeader.Base64UrlDeserialize(tokenParts[0]);
 
                 // if present, "typ" should be set to "JWT" or "http://openid.net/specs/jwt/1.0"
-                string type = this.header.Typ;
+                string type = Header.Typ;
                 if (type != null)
                 {
                     if (!(StringComparer.Ordinal.Equals(type, JwtConstants.HeaderType) || StringComparer.Ordinal.Equals(type, JwtConstants.HeaderTypeAlt)))
@@ -411,7 +381,7 @@ namespace System.IdentityModel.Tokens.Jwt
             try
             {
                 IdentityModelEventSource.Logger.WriteVerbose(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10718, tokenParts[1]));
-                this.payload = JwtPayload.Base64UrlDeserialize(tokenParts[1]);
+                Payload = JwtPayload.Base64UrlDeserialize(tokenParts[1]);
             }
             catch (Exception ex)
             {
@@ -440,15 +410,10 @@ namespace System.IdentityModel.Tokens.Jwt
                 }
             }
 
-            this.rawData = jwtEncodedString;
-            this.rawHeader = tokenParts[0];
-            this.rawPayload = tokenParts[1];
-            this.rawSignature = tokenParts[2];
-        }
-
-        internal void SetId(string id)
-        {
-            this.id = id;
+            RawData = jwtEncodedString;
+            RawHeader = tokenParts[0];
+            RawPayload = tokenParts[1];
+            RawSignature = tokenParts[2];
         }
     }
 }
