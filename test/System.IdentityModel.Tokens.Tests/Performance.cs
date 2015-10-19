@@ -187,13 +187,10 @@ namespace System.IdentityModel.Tokens.Tests
             string written = "Created, signed and xmlWrite: '{0}', '{1}' Tokens. Time: '{2}'";
             string created = "Created, signed: '{0}', '{1}' Tokens. Time: '{2}'";
 
-            SignatureProviderFactory factory = new SignatureProviderFactory();
-            SignatureProvider signatureProvider = factory.CreateForSigning( tokenDescriptor.SigningCredentials.SigningKey, tokenDescriptor.SigningCredentials.SignatureAlgorithm );
-
             started = DateTime.UtcNow;
             for ( int i = 0; i < iterations; i++ )
             {
-                CreateJwts( tokenDescriptor, signatureProvider );
+                JwtSecurityTokenHandler.CreateSignedToken( tokenDescriptor );
             }
 
             if ( display )
@@ -204,7 +201,7 @@ namespace System.IdentityModel.Tokens.Tests
             started = DateTime.UtcNow;
             for ( int i = 0; i < iterations; i++ )
             {
-                CreateJwts( tokenDescriptor, null );
+                JwtSecurityTokenHandler.CreateSignedToken(tokenDescriptor);
             }
 
             if ( display )
@@ -237,7 +234,7 @@ namespace System.IdentityModel.Tokens.Tests
             started = DateTime.UtcNow;
             for ( int i = 0; i < iterations; i++ )
             {
-                WriteJwts( tokenDescriptor, signatureProvider );
+                JwtSecurityTokenHandler.CreateSignedToken(tokenDescriptor);
             }
 
             if ( display )
@@ -263,21 +260,6 @@ namespace System.IdentityModel.Tokens.Tests
             MemoryStream ms = new MemoryStream();
             XmlDictionaryWriter writer = XmlDictionaryWriter.CreateTextWriter( ms );
             samlTokenHandler.WriteToken( writer, token );
-        }
-
-        private void WriteJwts( SecurityTokenDescriptor tokenDescriptor, SignatureProvider signatureProvider )
-        {
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwt = tokenHandler.CreateToken(tokenDescriptor) as JwtSecurityToken;
-            MemoryStream ms = new MemoryStream();
-            XmlDictionaryWriter writer = XmlDictionaryWriter.CreateTextWriter( ms );
-            tokenHandler.WriteToken( writer, jwt );
-        }
-
-        private void CreateJwts( SecurityTokenDescriptor tokenDescriptor, SignatureProvider signatureProvider )
-        {
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            tokenHandler.CreateToken(tokenDescriptor);
         }
     }
 }

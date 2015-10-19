@@ -25,6 +25,12 @@ namespace System.IdentityModel.Tokens
     /// </summary>
     public abstract class SignatureProvider : IDisposable
     {
+        protected SignatureProvider(SecurityKey key, string algorithm)
+        {
+            Key = key;
+            Algorithm = algorithm;
+        }
+
         /// <summary>
         /// Gets or sets a user context for a <see cref="SignatureProvider"/>.
         /// </summary>
@@ -40,6 +46,10 @@ namespace System.IdentityModel.Tokens
         /// <param name="algorithm">the crypto algorithm to use.</param>
         /// <returns>'true' if algorithm is supported.</returns>
         public abstract bool IsSupportedAlgorithm(string algorithm);
+
+        public SecurityKey Key { get; private set; }
+
+        public string Algorithm { get; private set; }
 
         /// <summary>
         /// Produces a signature over the 'input'

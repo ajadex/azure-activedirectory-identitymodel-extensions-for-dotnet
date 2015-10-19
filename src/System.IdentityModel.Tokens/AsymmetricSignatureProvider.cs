@@ -98,6 +98,7 @@ namespace System.IdentityModel.Tokens
         /// <exception cref="ArgumentException">if 'algorithm" is not supported.</exception>
         /// <exception cref="ArgumentOutOfRangeException">if 'key' is not <see cref="RsaSecurityKey"/> or <see cref="X509SecurityKey"/>.</exception>
         public AsymmetricSignatureProvider(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures = false)
+            : base(key, algorithm)
         {
             if (key == null)
                 LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, "AsymmetricSignatureProvider.key"), typeof(ArgumentNullException), EventLevel.Verbose);

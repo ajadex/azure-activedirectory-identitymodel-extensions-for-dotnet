@@ -54,6 +54,7 @@ namespace System.IdentityModel.Tokens
         /// <exception cref="InvalidOperationException"><see cref="SymmetricSecurityKey.GetKeyedHashAlgorithm"/> returns null.</exception>
         /// <exception cref="InvalidOperationException"><see cref="SymmetricSecurityKey.GetSymmetricKey"/> throws.</exception>
         public SymmetricSignatureProvider(SymmetricSecurityKey key, string algorithm)
+            : base(key, algorithm)
         {
             if (key == null)
             {
