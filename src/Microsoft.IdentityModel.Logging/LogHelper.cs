@@ -27,6 +27,7 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 
 namespace Microsoft.IdentityModel.Logging
 {
@@ -40,11 +41,11 @@ namespace Microsoft.IdentityModel.Logging
         /// </summary>
         /// <param name="message">message to log.</param>
         /// <param name="exceptionType">Type of the exception to be thrown.</param>
-        /// <param name="logLevel">Identifies the level of an event to be logged. Default is Error.</param>
+        /// <param name="eventLevel">Identifies the level of an event to be logged. Default is Error.</param>
         /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
-        public static void Throw(string message, Type exceptionType, EventLevel logLevel = EventLevel.Error, Exception innerException = null)
+        public static void Throw(string message, Type exceptionType, EventLevel eventLevel = EventLevel.Error, Exception innerException = null)
         {
-            IdentityModelEventSource.Logger.Write(logLevel, message, innerException);
+            IdentityModelEventSource.Logger.Write(eventLevel, message, innerException);
 
             if (innerException != null)
                 throw (Exception)Activator.CreateInstance(exceptionType, message, innerException);
@@ -58,7 +59,92 @@ namespace Microsoft.IdentityModel.Logging
         /// <param name="message">message to log.</param>
         public static T LogException<T>(string message) where T : Exception
         {
-            return LogException<T>(message, EventLevel.Error, null);
+            return LogException<T>(message, null, EventLevel.Error, null, null);
+        }
+
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message, object obj) where T : Exception
+        {
+            return LogException<T>(message, obj, EventLevel.Error, null, null);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message, params object[] args) where T : Exception
+        {
+            return LogException<T>(message, null, EventLevel.Error, null, args);
+        }
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message, object obj, params object[] args) where T : Exception
+        {
+            return LogException<T>(message, obj, EventLevel.Error, null, args);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message, EventLevel eventLevel) where T : Exception
+        {
+            return LogException<T>(message, null, eventLevel, null, null);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message, object obj, EventLevel eventLevel) where T : Exception
+        {
+            return LogException<T>(message, obj, eventLevel, null, null);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message, EventLevel eventLevel, params object[] args) where T : Exception
+        {
+            return LogException<T>(message, null, eventLevel, null, args);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        public static T LogException<T>(string message, object obj, EventLevel eventLevel, params object[] args) where T : Exception
+        {
+            return LogException<T>(message, obj, eventLevel, null, args);
+        }
+      
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        /// <param name="eventLevel">Identifies the level of an event to be logged. Default is Error.</param>
+        /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        public static T LogException<T>(string message, EventLevel eventLevel, Exception innerException) where T : Exception
+        {
+            return LogException<T>(message, null, eventLevel, innerException, null);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        /// <param name="eventLevel">Identifies the level of an event to be logged. Default is Error.</param>
+        /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        public static T LogException<T>(string message, object obj, EventLevel eventLevel, Exception innerException) where T : Exception
+        {
+            return LogException<T>(message, obj, eventLevel, innerException, null);
         }
 
         /// <summary>
@@ -67,9 +153,30 @@ namespace Microsoft.IdentityModel.Logging
         /// <param name="message">message to log.</param>
         /// <param name="logLevel">Identifies the level of an event to be logged. Default is Error.</param>
         /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
-        public static T LogException<T>(string message, EventLevel eventLevel, Exception innerException) where T : Exception
+        public static T LogException<T>(string message, EventLevel eventLevel, Exception innerException, params object[] args) where T : Exception
         {
-            IdentityModelEventSource.Logger.Write(eventLevel, message, innerException);
+            return LogException<T>(message, null, eventLevel, innerException, args);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        /// <param name="logLevel">Identifies the level of an event to be logged. Default is Error.</param>
+        /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        public static T LogException<T>(string message, object obj, EventLevel eventLevel, Exception innerException, params object[] args) where T : Exception
+        {
+            if (IdentityModelEventSource.Logger.IsEnabled() && IdentityModelEventSource.Logger.LogLevel >= eventLevel)
+            {
+                if (args != null)
+                    message = string.Format(CultureInfo.InvariantCulture, message, args);
+
+                if (obj != null)
+                    message = obj.GetType().ToString() + ":" + message;
+
+                IdentityModelEventSource.Logger.Write(eventLevel, message, innerException);
+            }
+
             if (innerException != null)
                 return (T)Activator.CreateInstance(typeof(T), message, innerException);
             else

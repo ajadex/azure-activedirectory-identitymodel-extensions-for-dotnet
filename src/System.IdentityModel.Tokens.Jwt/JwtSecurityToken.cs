@@ -155,13 +155,11 @@ namespace System.IdentityModel.Tokens.Jwt
             if (expires.HasValue && notBefore.HasValue)
             {
                 if (notBefore >= expires)
-                {
-                    LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10401, expires.Value, notBefore.Value), typeof(ArgumentException), EventLevel.Error);
-                }
+                    throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10401, new object[]{ expires.Value, notBefore.Value});
             }
 
             Payload = new JwtPayload(issuer: issuer, audience: audience, claims: claims, notBefore: notBefore, expires: expires);
-            Header = new JwtHeader(signingCredentials);
+            Header = signingCredentials == null ? new JwtHeader() : new JwtHeader(signingCredentials);
             RawSignature = string.Empty;
         }
 

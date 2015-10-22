@@ -16,17 +16,24 @@
 // limitations under the License.
 //-----------------------------------------------------------------------
 
-using System;
+using Microsoft.IdentityModel.Logging;
+using System.Globalization;
 
 namespace System.IdentityModel.Tokens
 {
     /// <summary>
-    /// This class defines the object model for types that provide signature services.
+    /// Provides signature services, signing and verifying.
     /// </summary>
     public abstract class SignatureProvider : IDisposable
     {
         protected SignatureProvider(SecurityKey key, string algorithm)
         {
+            if (key == null)
+                throw LogHelper.LogException<ArgumentNullException>("key");
+
+            if (string.IsNullOrEmpty(algorithm))
+                throw LogHelper.LogException<ArgumentException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : algorithm"));
+
             Key = key;
             Algorithm = algorithm;
         }

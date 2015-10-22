@@ -46,6 +46,12 @@ namespace System.IdentityModel.Tokens.Jwt
         {
         }
 
+        public JwtPayload(string issuer, string audience, IEnumerable<Claim> claims, DateTime? notBefore, DateTime? expires)
+           : this(issuer, audience, claims, notBefore, expires, null)
+        {
+
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtPayload"/> class with claims added for each parameter specified. Default string comparer <see cref="StringComparer.Ordinal"/>. 
         /// </summary>
@@ -54,44 +60,39 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <param name="claims">if this value is not null then for each <see cref="Claim"/> a { 'Claim.Type', 'Claim.Value' } is added. If duplicate claims are found then a { 'Claim.Type', List&lt;object> } will be created to contain the duplicate values.</param>
         /// <param name="notBefore">if notbefore.HasValue is 'true' a { nbf, 'value' } claim is added.</param>
         /// <param name="expires">if expires.HasValue is 'true' a { exp, 'value' } claim is added.</param>
+        /// <param name="issuedAt">if issuedAt.HasValue is 'true' a { iat, 'value' } claim is added.</param>
         /// <remarks>Comparison is set to <see cref="StringComparer.Ordinal"/>
         /// <para>The 4 parameters: 'issuer', 'audience', 'notBefore', 'expires' take precednece over <see cref="Claim"/>(s) in 'claims'. The values in 'claims' will be overridden.</para></remarks>
         /// <exception cref="ArgumentException">if 'expires' &lt;= 'notbefore'.</exception>
-        public JwtPayload(string issuer, string audience, IEnumerable<Claim> claims, DateTime? notBefore, DateTime? expires)
+        public JwtPayload(string issuer, string audience, IEnumerable<Claim> claims, DateTime? notBefore, DateTime? expires, DateTime? issuedAt)
             : base(StringComparer.Ordinal)
         {
-            if (expires.HasValue && notBefore.HasValue)
-            {
-                if (notBefore >= expires)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10401, expires.Value, notBefore.Value));
-                }
-            }
-
-            if (claims != null)
-            {
-                this.AddClaims(claims);
-            }
-
-            if (!string.IsNullOrWhiteSpace(issuer))
-            {
-                this[JwtRegisteredClaimNames.Iss] = issuer;
-            }
-
-            if (!string.IsNullOrWhiteSpace(audience))
-            {
-                this[JwtRegisteredClaimNames.Aud] = audience;
-            }
-
             if (expires.HasValue)
             {
+                if (notBefore.HasValue)
+                {
+                    if (notBefore.Value >= expires.Value)
+                    {
+                        throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10401, expires.Value, notBefore.Value));
+                    }
+
+                    this[JwtRegisteredClaimNames.Nbf] = EpochTime.GetIntDate(notBefore.Value.ToUniversalTime());
+                }
+
                 this[JwtRegisteredClaimNames.Exp] = EpochTime.GetIntDate(expires.Value.ToUniversalTime());
             }
 
-            if (notBefore.HasValue)
-            {
-                this[JwtRegisteredClaimNames.Nbf] = EpochTime.GetIntDate(notBefore.Value.ToUniversalTime());
-            }
+            if (issuedAt.HasValue)
+                this[JwtRegisteredClaimNames.Iat] = EpochTime.GetIntDate(issuedAt.Value.ToUniversalTime());
+
+            if (claims != null)
+                AddClaims(claims);
+
+            if (!string.IsNullOrEmpty(issuer))
+                this[JwtRegisteredClaimNames.Iss] = issuer;
+
+            if (!string.IsNullOrEmpty(audience))
+                this[JwtRegisteredClaimNames.Aud] = audience;
         }
 
         /// <summary>
