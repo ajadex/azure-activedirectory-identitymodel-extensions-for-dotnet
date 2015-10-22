@@ -84,7 +84,7 @@ namespace System.IdentityModel.Tokens.Tests
 
         public static string CreateJwtSecurityToken(SecurityTokenDescriptor tokenDescriptor)
         {
-            return JwtSecurityTokenHandler.CreateSignedToken(tokenDescriptor);
+            return (new JwtSecurityTokenHandler()).CreateSignedJwt(tokenDescriptor);
         }
 
         public static JwtSecurityToken CreateJwtSecurityToken(string issuer, string originalIssuer, IEnumerable<Claim> claims, SigningCredentials signingCredentials)

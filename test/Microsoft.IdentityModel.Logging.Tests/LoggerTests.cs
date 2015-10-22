@@ -42,7 +42,7 @@ namespace Microsoft.IdentityModel.Logging.Tests
         public void LogMessageAndThrowException()
         {
             SampleListener listener = new SampleListener();
-            IdentityModelEventSource.LogLevel = EventLevel.Verbose;             // since null parameters exceptions are logged at Verbose level
+            IdentityModelEventSource.Logger.LogLevel = EventLevel.Verbose;             // since null parameters exceptions are logged at Verbose level
             listener.EnableEvents(IdentityModelEventSource.Logger, EventLevel.Verbose);
 
             try
@@ -64,7 +64,7 @@ namespace Microsoft.IdentityModel.Logging.Tests
         public void LogMessage()
         {
             SampleListener listener = new SampleListener();
-            IdentityModelEventSource.LogLevel = EventLevel.Warning;
+            IdentityModelEventSource.Logger.LogLevel = EventLevel.Warning;
             listener.EnableEvents(IdentityModelEventSource.Logger, EventLevel.Verbose);
 
             TokenValidationParameters validationParameters = new TokenValidationParameters()
@@ -81,7 +81,7 @@ namespace Microsoft.IdentityModel.Logging.Tests
         public void TestLogLevel()
         {
             SampleListener listener = new SampleListener();
-            IdentityModelEventSource.LogLevel = EventLevel.Informational;
+            IdentityModelEventSource.Logger.LogLevel = EventLevel.Informational;
             listener.EnableEvents(IdentityModelEventSource.Logger, EventLevel.Verbose);
 
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
@@ -93,7 +93,7 @@ namespace Microsoft.IdentityModel.Logging.Tests
             Assert.DoesNotContain("IDX10721: ", listener.TraceBuffer);
 
             // Setting log level to verbose so that all messages are logged.
-            IdentityModelEventSource.LogLevel = EventLevel.Verbose;
+            IdentityModelEventSource.Logger.LogLevel = EventLevel.Verbose;
             handler.CreateToken();
             Assert.Contains("IDX10722: ", listener.TraceBuffer);
             Assert.Contains("IDX10721: ", listener.TraceBuffer);
@@ -103,7 +103,7 @@ namespace Microsoft.IdentityModel.Logging.Tests
         [Fact(DisplayName = "LoggerTests: Test TextWriterEventListener")]
         public void TextWriterEventListenerLogging()
         {
-            IdentityModelEventSource.LogLevel = EventLevel.Informational;
+            IdentityModelEventSource.Logger.LogLevel = EventLevel.Informational;
             using (TextWriterEventListener listener = new TextWriterEventListener("testLog.txt"))
             {
                 listener.EnableEvents(IdentityModelEventSource.Logger, EventLevel.Verbose);
@@ -116,7 +116,6 @@ namespace Microsoft.IdentityModel.Logging.Tests
                     DateTime.UtcNow,
                     DateTime.UtcNow + TimeSpan.FromHours(1),
                     IdentityUtilities.DefaultAsymmetricSigningCredentials);
-
 
                 TokenValidationParameters validationParameters =
                     new TokenValidationParameters()
@@ -199,8 +198,6 @@ namespace Microsoft.IdentityModel.Logging.Tests
             Assert.Contains("This is a warning for streamwriter!", logText);
             File.Delete("testLog.txt");
         }
-
-
     }
 
     class SampleListener : EventListener

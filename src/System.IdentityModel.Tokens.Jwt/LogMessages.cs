@@ -93,7 +93,6 @@ namespace System.IdentityModel.Tokens.Jwt
         internal const string IDX10720 = "IDX10720: Token string does not match the token format: header.payload.signature";
         internal const string IDX10721 = "IDX10721: Creating payload and header from the passed parameters including issuer, audience, signing credentials and others.";
         internal const string IDX10722 = "IDX10722: Creating security token from the header: '{0}', payload: '{1}' and raw signature: '{2}'.";
-        internal const string IDX10723 = "IDX10723: Adding the signature: '{0}' to the token";
 
 #pragma warning restore 1591
 

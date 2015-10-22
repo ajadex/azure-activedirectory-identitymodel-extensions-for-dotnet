@@ -199,7 +199,7 @@ namespace System.IdentityModel.Tokens.Tests
             started = DateTime.UtcNow;
             for ( int i = 0; i < iterations; i++ )
             {
-                JwtSecurityTokenHandler.CreateSignedToken( tokenDescriptor );
+                (new JwtSecurityTokenHandler()).CreateSignedJwt(tokenDescriptor);
             }
 
             if ( display )
@@ -210,7 +210,7 @@ namespace System.IdentityModel.Tokens.Tests
             started = DateTime.UtcNow;
             for ( int i = 0; i < iterations; i++ )
             {
-                JwtSecurityTokenHandler.CreateSignedToken(tokenDescriptor);
+                (new JwtSecurityTokenHandler()).CreateSignedJwt(tokenDescriptor);
             }
 
             if ( display )
@@ -243,7 +243,7 @@ namespace System.IdentityModel.Tokens.Tests
             started = DateTime.UtcNow;
             for ( int i = 0; i < iterations; i++ )
             {
-                JwtSecurityTokenHandler.CreateSignedToken(tokenDescriptor);
+                (new JwtSecurityTokenHandler()).CreateSignedJwt(tokenDescriptor);
             }
 
             if ( display )

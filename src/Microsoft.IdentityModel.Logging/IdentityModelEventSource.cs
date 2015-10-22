@@ -37,12 +37,15 @@ namespace Microsoft.IdentityModel.Logging
     [EventSource(Name = "Microsoft.IdentityModel.EventSource")]
     public class IdentityModelEventSource : EventSource
     {
-        private static EventLevel _logLevel;
 
         static IdentityModelEventSource()
         {
             Logger = new IdentityModelEventSource();
-            _logLevel = EventLevel.Warning;
+        }
+
+        private IdentityModelEventSource()
+        {
+            LogLevel = EventLevel.Warning;
         }
 
         /// <summary>
@@ -53,7 +56,7 @@ namespace Microsoft.IdentityModel.Logging
         [Event(1, Level = EventLevel.Verbose)]
         public void WriteVerbose(string message)
         {
-            if (IsEnabled() && _logLevel >= EventLevel.Verbose)
+            if (IsEnabled() && LogLevel >= EventLevel.Verbose)
             {
                 message = PrepareMessage(message, EventLevel.Verbose);
                 WriteEvent(1, message);
@@ -63,7 +66,7 @@ namespace Microsoft.IdentityModel.Logging
         [Event(2, Level = EventLevel.Informational)]
         public void WriteInformation(string message)
         {
-            if (IsEnabled() && _logLevel >= EventLevel.Informational)
+            if (IsEnabled() && LogLevel >= EventLevel.Informational)
             {
                 message = PrepareMessage(message, EventLevel.Informational);
                 WriteEvent(2, message);
@@ -73,7 +76,7 @@ namespace Microsoft.IdentityModel.Logging
         [Event(3, Level = EventLevel.Warning)]
         public void WriteWarning(string message)
         {
-            if (IsEnabled() && _logLevel >= EventLevel.Warning)
+            if (IsEnabled() && LogLevel >= EventLevel.Warning)
             {
                 message = PrepareMessage(message, EventLevel.Warning);
                 WriteEvent(3, message);
@@ -83,7 +86,7 @@ namespace Microsoft.IdentityModel.Logging
         [Event(4, Level = EventLevel.Error)]
         public void WriteError(string message)
         {
-            if (IsEnabled() && _logLevel >= EventLevel.Error)
+            if (IsEnabled() && LogLevel >= EventLevel.Error)
             {
                 message = PrepareMessage(message, EventLevel.Error);
                 WriteEvent(4, message);
@@ -93,7 +96,7 @@ namespace Microsoft.IdentityModel.Logging
         [Event(5, Level = EventLevel.Critical)]
         public void WriteCritical(string message)
         {
-            if (IsEnabled() && _logLevel >= EventLevel.Critical)
+            if (IsEnabled() && LogLevel >= EventLevel.Critical)
             {
                 message = PrepareMessage(message, EventLevel.Critical);
                 WriteEvent(5, message);
@@ -105,7 +108,7 @@ namespace Microsoft.IdentityModel.Logging
         {
             if (innerException != null)
             {
-                message = String.Format(CultureInfo.InvariantCulture, "Message: {0}, InnerException: {1}", message, innerException.ToString());
+                message = string.Format(CultureInfo.InvariantCulture, "Message: {0}, InnerException: {1}", message, innerException.ToString());
             }
 
             switch (level)
@@ -134,16 +137,9 @@ namespace Microsoft.IdentityModel.Logging
         /// <summary>
         /// Minimum log level to log events. Default is Warning.
         /// </summary>
-        public static EventLevel LogLevel
+        public EventLevel LogLevel
         {
-            get
-            {
-                return _logLevel;
-            }
-            set
-            {
-                _logLevel = value;
-            }
+            get; set;
         }
 
         private string PrepareMessage(string message, EventLevel level)

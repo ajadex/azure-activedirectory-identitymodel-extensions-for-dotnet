@@ -35,11 +35,12 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.IdentityModel.Logging;
 using System.Threading;
+using System.ComponentModel;
 
 namespace System.IdentityModel.Tokens.Jwt
 {
     /// <summary>
-    /// A <see cref="SecurityTokenHandler"/> designed for creating and validating Json Web Tokens. See http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-07.
+    /// A <see cref="SecurityTokenHandler"/> designed for creating and validating Json Web Tokens. See: http://tools.ietf.org/html/rfc7519 and http://www.rfc-editor.org/info/rfc7515
     /// </summary>
     public class JwtSecurityTokenHandler : SecurityTokenHandler, ISecurityTokenValidator
     {
@@ -85,6 +86,7 @@ namespace System.IdentityModel.Tokens.Jwt
             _inboundClaimTypeMap = new Dictionary<string, string>(DefaultInboundClaimTypeMap);
             _outboundClaimTypeMap = new Dictionary<string, string>(DefaultOutboundClaimTypeMap);
             _inboundClaimFilter = new HashSet<string>(DefaultInboundClaimFilter);
+            SetDefaultTimesOnTokenCreation = true;
         }
 
         /// <summary>
@@ -224,8 +226,9 @@ namespace System.IdentityModel.Tokens.Jwt
         }
 
         /// <summary>
-        /// Gets and sets the token lifetime in minutes.
+        /// Gets or sets the token lifetime in minutes.
         /// </summary>
+        /// <remarks>Used by <see cref="CreateToken(string, string, ClaimsIdentity, DateTime?, DateTime?, SigningCredentials)"/> to set the default expiration ('exp'). <see cref="DefaultTokenLifetimeInMinutes"/> for the default.</remarks>
         /// <exception cref="ArgumentOutOfRangeException">'value' less than 1.</exception>
         public int TokenLifetimeInMinutes
         {
@@ -254,7 +257,7 @@ namespace System.IdentityModel.Tokens.Jwt
         /// Gets and sets the maximum size in bytes, that a will be processed.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">'value' less than 1.</exception>
-        public Int32 MaximumTokenSizeInBytes
+        public int MaximumTokenSizeInBytes
         {
             get
             {
@@ -273,7 +276,7 @@ namespace System.IdentityModel.Tokens.Jwt
         }
 
         /// <summary>
-        /// Determines if the string is a well formed Json Web token (see http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-07)
+        /// Determines if the string is a well formed Json Web token (see: http://tools.ietf.org/html/rfc7519 )
         /// </summary>
         /// <param name="tokenString">string that should represent a valid JSON Web Token.</param>
         /// <remarks>Uses <see cref="Regex.IsMatch(string, string)"/>( token, @"^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$" ).
@@ -316,23 +319,36 @@ namespace System.IdentityModel.Tokens.Jwt
         /// Creates a signed Json Web Token (JWT).
         /// </summary>
         /// <param name="tokenDescriptor"> a <see cref="SecurityTokenDescriptor"/> that contains details of token contents and <see cref="SignatureProvider"/>.
-        public static string CreateSignedToken(SecurityTokenDescriptor tokenDescriptor)
+        public string CreateSignedJwt(SecurityTokenDescriptor tokenDescriptor)
         {
             if (tokenDescriptor == null)
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : tokenDescriptor"), typeof(ArgumentException), EventLevel.Error);
+                throw LogHelper.LogException<ArgumentException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : tokenDescriptor"));
 
             if (tokenDescriptor.SignatureProvider == null)
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : tokenDescriptor.SignatureProvider"), typeof(ArgumentException), EventLevel.Error);
+                throw LogHelper.LogException<ArgumentException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : tokenDescriptor.SignatureProvider"));
 
-            DateTime utcNow = DateTime.UtcNow;
-            DateTime? notBeforeUtc = tokenDescriptor.NotBefore.HasValue ? tokenDescriptor.NotBefore.Value.ToUniversalTime() : (DateTime?)null;
-            DateTime? expiresUtc = tokenDescriptor.Expires.HasValue ? tokenDescriptor.Expires.Value.ToUniversalTime() : (DateTime?)null;
+            DateTime? exp = null;
+            DateTime? nbf = null;
+            DateTime? iat = null;
 
-            JwtPayload payload = new JwtPayload(tokenDescriptor.Issuer, tokenDescriptor.Audience, tokenDescriptor.Claims, expiresUtc, notBeforeUtc);
+            if (SetDefaultTimesOnTokenCreation && (!tokenDescriptor.NotBefore.HasValue || !tokenDescriptor.Expires.HasValue || !tokenDescriptor.IssuedAt.HasValue))
+            {
+                DateTime now = DateTime.UtcNow;
+                if (!tokenDescriptor.Expires.HasValue)
+                    exp = now + TimeSpan.FromMinutes(TokenLifetimeInMinutes);
+
+                if (!tokenDescriptor.NotBefore.HasValue)
+                    nbf = now;
+
+                if (!tokenDescriptor.IssuedAt.HasValue)
+                    iat = now;
+            }
+
+            JwtPayload payload = new JwtPayload(tokenDescriptor.Issuer, tokenDescriptor.Audience, tokenDescriptor.Claims, nbf, exp, iat);
             JwtHeader header = new JwtHeader(tokenDescriptor.SignatureProvider.Key.KeyId, tokenDescriptor.SignatureProvider.Algorithm);
             string encodedToken = string.Concat(header.Base64UrlEncode(), ".", payload.Base64UrlEncode());
 
-            return encodedToken + "." + Base64UrlEncoder.Encode(CreateSignature(encodedToken, tokenDescriptor.SignatureProvider));
+            return encodedToken + "." + Base64UrlEncoder.Encode(tokenDescriptor.SignatureProvider.Sign(Encoding.UTF8.GetBytes(encodedToken)));
         }
 
         /// <summary>
@@ -357,26 +373,21 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <exception cref="ArgumentException">if 'expires' &lt;= 'notBefore'.</exception>
         public virtual JwtSecurityToken CreateToken(string issuer = null, string audience = null, ClaimsIdentity subject = null, DateTime? notBefore = null, DateTime? expires = null, SigningCredentials signingCredentials = null)
         {
-            if (expires.HasValue && notBefore.HasValue)
-            {
-                if (notBefore >= expires)
-                {
-                    LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10401, expires.Value, notBefore.Value), typeof(ArgumentException), EventLevel.Error);
-                }
-            }
-
             // if not set, use defaults
-            if (!expires.HasValue && !notBefore.HasValue)
+            if (SetDefaultTimesOnTokenCreation && (!notBefore.HasValue || !expires.HasValue))
             {
                 DateTime now = DateTime.UtcNow;
-                expires = now + TimeSpan.FromMinutes(TokenLifetimeInMinutes);
-                notBefore = now;
+                if (!expires.HasValue)
+                    expires = now + TimeSpan.FromMinutes(TokenLifetimeInMinutes);
+
+                if (!notBefore.HasValue)
+                    notBefore = now;
             }
 
             IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10721);
             IEnumerable<Claim> subjectClaims = subject == null ? null : OutboundClaimTypeTransform(subject.Claims);
-            JwtPayload payload = new JwtPayload(issuer, audience, subjectClaims, notBefore, expires);
-            JwtHeader header = new JwtHeader(signingCredentials);
+            JwtPayload payload = new JwtPayload(issuer, audience, subjectClaims, notBefore, expires);            
+            JwtHeader header = signingCredentials == null ? new JwtHeader() : new JwtHeader(signingCredentials);
 
             if (subject != null && subject.Actor != null)
             {
@@ -391,7 +402,7 @@ namespace System.IdentityModel.Tokens.Jwt
             if (signingCredentials != null)
             {
                 IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10645);
-                rawSignature = Base64UrlEncoder.Encode(CreateSignature(signingInput, signingCredentials.Key.GetSignatureProviderForSigning(signingCredentials.Algorithm)));
+                rawSignature = CreateEncodedSignature(signingInput, signingCredentials.Key.GetSignatureProviderForSigning(signingCredentials.Algorithm));
             }
 
             IdentityModelEventSource.Logger.WriteInformation(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10722, rawHeader, rawPayload, rawSignature));
@@ -602,25 +613,17 @@ namespace System.IdentityModel.Tokens.Jwt
         public override string WriteToken(SecurityToken token)
         {
             if (token == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": token"),typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, EventLevel.Verbose, GetType() + ": token");
 
             JwtSecurityToken jwt = token as JwtSecurityToken;
             if (jwt == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10706, GetType(), typeof(JwtSecurityToken), token.GetType()), typeof(ArgumentNullException), EventLevel.Error);
-            }
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10706, new object[] { GetType(), typeof(JwtSecurityToken), token.GetType() });
 
-            string signature = string.Empty;
             string signingInput = string.Concat(jwt.EncodedHeader, ".", jwt.EncodedPayload);
-            if (jwt.SigningCredentials != null)
-            {
-                signature = Base64UrlEncoder.Encode(CreateSignature(signingInput, jwt.SigningCredentials.Key.GetSignatureProviderForSigning(jwt.SigningCredentials.Algorithm)));
-            }
-
-            IdentityModelEventSource.Logger.WriteInformation(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10723, signature));
-            return string.Concat(signingInput, ".", signature);
+            if (jwt.SigningCredentials == null)
+                return signingInput + ".";
+            else
+                return signingInput + "." + CreateEncodedSignature(signingInput, jwt.SigningCredentials.Key.GetSignatureProviderForSigning(jwt.SigningCredentials.Algorithm));
         }
 
         /// <summary>
@@ -628,9 +631,9 @@ namespace System.IdentityModel.Tokens.Jwt
         /// </summary>
         /// <param name="input">string to be signed</param>
         /// <param name="signatureProvider">if provided, the <see cref="SignatureProvider"/> will be used to sign the token</param>
-        /// <returns>The signature over the bytes obtained from UTF8Encoding.GetBytes( 'input' ).</returns>
+        /// <returns>The bse64urlendcoded signature over the bytes obtained from UTF8Encoding.GetBytes( 'input' ).</returns>
         /// <exception cref="ArgumentNullException">'input' or 'signatureProvider' is null.</exception>
-        internal static byte[] CreateSignature(string input, SignatureProvider signatureProvider)
+        internal static string CreateEncodedSignature(string input, SignatureProvider signatureProvider)
         {
             if (null == input)
                 LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, typeof(JwtSecurityTokenHandler) + ": inputString"), typeof(ArgumentNullException), EventLevel.Verbose);
@@ -638,7 +641,7 @@ namespace System.IdentityModel.Tokens.Jwt
             if (signatureProvider == null)
                 LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, typeof(JwtSecurityTokenHandler) + ": signatureProvider"), typeof(ArgumentNullException), EventLevel.Verbose);
 
-            return signatureProvider.Sign(Encoding.UTF8.GetBytes(input));
+            return Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes(input)));
         }
 
         private bool ValidateSignature(byte[] encodedBytes, byte[] signature, SecurityKey key, string algorithm)
@@ -1003,6 +1006,13 @@ namespace System.IdentityModel.Tokens.Jwt
 
             return null;
         }
+
+        /// <summary>
+        /// Gets or sets a bool that controls if token creation will set default 'exp' and 'nbf' if not specified.
+        /// </summary>
+        /// <remarks>see: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
+        [DefaultValue(true)]
+        public bool SetDefaultTimesOnTokenCreation { get; set; }
 
         /// <summary>
         /// Validates the <see cref="JwtSecurityToken.SigningKey"/> is an expected value.

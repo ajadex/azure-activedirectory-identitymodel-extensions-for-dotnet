@@ -32,8 +32,8 @@ using System.Globalization;
 namespace System.IdentityModel.Tokens.Jwt
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="JwtHeader"/> which contains JSON objects representing the cryptographic operations applied to the JWT and optionally any additional properties of the JWT.
-    /// The member names within the JWT Header are referred to as Header Parameter Names. 
+    /// Initializes a new instance of <see cref="JwtHeader"/> which contains JSON objects representing the cryptographic operations applied to the JWT and optionally any additional properties of the JWT. 
+    /// The member names within the JWT Header are referred to as Header Parameter Names.
     /// <para>These names MUST be unique and the values must be <see cref="string"/>(s). The corresponding values are referred to as Header Parameter Values.</para>
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2237:MarkISerializableTypesWithSerializable"), System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Serialize not really supported.")]
@@ -45,32 +45,28 @@ namespace System.IdentityModel.Tokens.Jwt
         public JwtHeader()
             : base(StringComparer.Ordinal)
         {
+            this[JwtHeaderParameterNames.Alg] = JwtAlgorithms.NONE;
+            this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtHeader"/>.
         /// With the Header Parameters:
-        /// <para>signingCredentials is non-null</para>
         /// <para>{ { typ, JWT }, { alg, SigningCredentials.Algorithm } }</para>
-        /// <para>signingCredentials is null</para>
-        /// <para>{ { typ, JWT }, { alg, none } }</para>
         /// </summary>
-        /// <param name="signingCredentials">The <see cref="SigningCredentials"/>
-        /// that will be or used when creating a signed encoded JWT string using this to sign the <see cref="JwtHeader"/>.</param>
+        /// <param name="signingCredentials"><see cref="SigningCredentials"/> used creating a JWS Compact JSON</param>
+        /// <exception cref="ArgumentNullException">if 'signingCredentials' is null.</exception>
         public JwtHeader(SigningCredentials signingCredentials)
             : base(StringComparer.Ordinal)
         {
+            if (signingCredentials == null)
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "SigningCredentials");
+
+            SigningCredentials = signingCredentials;
+
             this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
-            if (signingCredentials != null)
-            {
-                SigningCredentials = signingCredentials;
-                this[JwtHeaderParameterNames.Alg] = signingCredentials.Algorithm;
-                this[JwtHeaderParameterNames.Kid] = signingCredentials.Key.KeyId;
-            }
-            else
-            {
-                this[JwtHeaderParameterNames.Alg] = JwtAlgorithms.NONE;
-            }
+            this[JwtHeaderParameterNames.Alg] = signingCredentials.Algorithm;
+            this[JwtHeaderParameterNames.Kid] = signingCredentials.Key.KeyId;
         }
 
         /// <summary>
@@ -81,7 +77,7 @@ namespace System.IdentityModel.Tokens.Jwt
         public JwtHeader(string keyId, string algorithm)
             : base(StringComparer.Ordinal)
         {
-            if( string.IsNullOrEmpty(keyId))
+            if(string.IsNullOrEmpty(keyId))
                 throw LogHelper.LogException<ArgumentException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : keyId"));
 
             if (string.IsNullOrEmpty(algorithm))

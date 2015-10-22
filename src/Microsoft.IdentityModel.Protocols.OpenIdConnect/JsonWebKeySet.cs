@@ -40,7 +40,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
     /// <summary>
     /// Contains a collection of <see cref="JsonWebKey"/> that can be populated from a json string.
     /// </summary>
-    /// <remarks>provides support for http://tools.ietf.org/html/draft-ietf-jose-json-web-key-27 </remarks>
+    /// <remarks>provides support for http://tools.ietf.org/html/rfc7517.</remarks>
     public class JsonWebKeySet
     {
         private List<JsonWebKey> _keys = new List<JsonWebKey>();

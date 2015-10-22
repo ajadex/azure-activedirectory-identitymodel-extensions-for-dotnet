@@ -36,10 +36,10 @@ namespace System.IdentityModel.Tokens
         public SigningCredentials(SecurityKey key, string algorithm)
         {
             if (key == null)
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": key"), typeof(ArgumentNullException), EventLevel.Verbose);
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, GetType() + ": key", EventLevel.Verbose);
 
             if (string.IsNullOrEmpty(algorithm))
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": algorithm"), typeof(ArgumentNullException), EventLevel.Verbose);
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, GetType() + ": algorithm", EventLevel.Verbose);
 
             Algorithm = algorithm;
             Key = key;
