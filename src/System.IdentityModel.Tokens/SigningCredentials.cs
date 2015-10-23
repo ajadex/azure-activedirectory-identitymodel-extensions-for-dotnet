@@ -39,7 +39,7 @@ namespace System.IdentityModel.Tokens
                 throw LogHelper.LogException<ArgumentNullException>(EventLevel.Verbose, LogMessages.IDX10000, GetType() + "key");
 
             if (string.IsNullOrEmpty(algorithm))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, GetType() + ": algorithm", EventLevel.Verbose);
+                throw LogHelper.LogException<ArgumentNullException>(EventLevel.Verbose, LogMessages.IDX10000, GetType() + ": algorithm");
 
             Algorithm = algorithm;
             Key = key;
