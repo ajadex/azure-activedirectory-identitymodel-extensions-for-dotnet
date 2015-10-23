@@ -41,7 +41,7 @@ namespace System.IdentityModel.Tokens
                 throw LogHelper.LogException<ArgumentNullException>("key");
 
             if (string.IsNullOrEmpty(algorithm))
-                throw LogHelper.LogException<ArgumentException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : algorithm"));
+                throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10000, "algorithm");
 
             Key = key;
             Algorithm = algorithm;

@@ -384,7 +384,7 @@ namespace System.IdentityModel.Tokens.Jwt
                     notBefore = now;
             }
 
-            IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10721);
+            IdentityModelEventSource.Logger.WriteVerbose(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10721, audience ?? "null", issuer ?? "null"));
             IEnumerable<Claim> subjectClaims = subject == null ? null : OutboundClaimTypeTransform(subject.Claims);
             JwtPayload payload = new JwtPayload(issuer, audience, subjectClaims, notBefore, expires);            
             JwtHeader header = signingCredentials == null ? new JwtHeader() : new JwtHeader(signingCredentials);
@@ -748,7 +748,7 @@ namespace System.IdentityModel.Tokens.Jwt
                 }
 
                 if (keysAttempted.Length > 0)
-                    throw LogHelper.LogException<SecurityTokenInvalidSignatureException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10503, keysAttempted.ToString(), exceptionStrings.ToString(), jwt.ToString()));
+                    throw LogHelper.LogException<SecurityTokenInvalidSignatureException>(LogMessages.IDX10503, keysAttempted.ToString(), exceptionStrings.ToString(), jwt.ToString());
             }
 
             throw LogHelper.LogException<SecurityTokenInvalidSignatureException>(LogMessages.IDX10500);
@@ -777,15 +777,9 @@ namespace System.IdentityModel.Tokens.Jwt
                 IdentityModelEventSource.Logger.WriteVerbose(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, "securityKey"));
                 return "null";
             }
-            else
-            {
-				X509SecurityKey x509Key = securityKey as X509SecurityKey;
-				if (x509Key != null)
-				{
-					return x509Key.ToString() + " - (thumbprint) : " + x509Key.Certificate.Thumbprint;
-				}
-                return securityKey.ToString();
-            }
+
+            return securityKey.ToString() + " , KeyId: " + securityKey.KeyId;
+
         }
 
         /// <summary>
@@ -961,6 +955,7 @@ namespace System.IdentityModel.Tokens.Jwt
             {
                 LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": validationParameters"), typeof(ArgumentNullException), EventLevel.Verbose);
             }
+
             if (securityToken == null)
             {
                 LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": securityToken"), typeof(ArgumentNullException), EventLevel.Verbose);
@@ -973,6 +968,7 @@ namespace System.IdentityModel.Tokens.Jwt
                 {
                     return validationParameters.IssuerSigningKey;
                 }
+
                 if (validationParameters.IssuerSigningKeys != null)
                 {
                     foreach (SecurityKey signingKey in validationParameters.IssuerSigningKeys)
@@ -1033,16 +1029,6 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <param name="token">A token of type <see cref="TokenType"/>.</param>
         public override void WriteToken(XmlWriter writer, SecurityToken token)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException("writer");
-            }
-
-            if (token == null)
-            {
-                throw new ArgumentNullException("token");
-            }
-
             throw new NotImplementedException();
         }
 

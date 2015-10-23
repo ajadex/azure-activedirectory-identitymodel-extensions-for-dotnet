@@ -60,6 +60,58 @@ namespace Microsoft.IdentityModel.Logging.Tests
             }
         }
 
+        [Fact(DisplayName = "LogHelper.LogException")]
+        public void LogException()
+        {
+            var messageWithParams = Guid.NewGuid().ToString() + "{0}";
+            var guid1 = Guid.NewGuid().ToString();
+            var guid2 = Guid.NewGuid().ToString();
+            var guid3 = Guid.NewGuid().ToString();
+            var guid4 = Guid.NewGuid().ToString();
+            var guid5 = Guid.NewGuid().ToString();
+
+            SampleListener listener = new SampleListener();
+            IdentityModelEventSource.Logger.LogLevel = EventLevel.Critical;
+            listener.EnableEvents(IdentityModelEventSource.Logger, EventLevel.Critical);
+
+            // default logs at Error
+            var exception = LogHelper.LogException<ArgumentException>(guid1);
+            Assert.Equal(exception.GetType(), typeof(ArgumentException));
+            Assert.True(string.IsNullOrEmpty(listener.TraceBuffer));
+            Assert.Contains(guid1, exception.Message);
+
+            listener = new SampleListener();
+            IdentityModelEventSource.Logger.LogLevel = EventLevel.Error;
+            listener.EnableEvents(IdentityModelEventSource.Logger, EventLevel.Error);
+
+            exception = LogHelper.LogException<ArgumentException>(guid1);
+            Assert.Equal(exception.GetType(), typeof(ArgumentException));
+            Assert.Contains(guid1, exception.Message);
+
+            exception = LogHelper.LogException<ArgumentException>(messageWithParams, guid2);
+            Assert.Contains(guid2, exception.Message);
+            Assert.Equal(exception.GetType(), typeof(ArgumentException));
+
+            exception = LogHelper.LogException<ArgumentException>(EventLevel.Error, messageWithParams, guid3);
+            Assert.Contains(guid3, exception.Message);
+
+            exception = LogHelper.LogException<ArgumentException>(EventLevel.Error, new NotSupportedException(), messageWithParams, guid4);
+            Assert.Contains(guid4, exception.Message);
+            Assert.NotNull(exception.InnerException);
+            Assert.Equal(exception.InnerException.GetType(), typeof(NotSupportedException));
+
+            exception = LogHelper.LogException<ArgumentException>(EventLevel.Informational, new NotSupportedException(), messageWithParams, guid5);
+            Assert.Contains(guid5, exception.Message);
+            Assert.NotNull(exception.InnerException);
+            Assert.Equal(exception.InnerException.GetType(), typeof(NotSupportedException));
+
+            Assert.Contains(guid1, listener.TraceBuffer);
+            Assert.Contains(guid2, listener.TraceBuffer);
+            Assert.Contains(guid3, listener.TraceBuffer);
+            Assert.Contains(guid4, listener.TraceBuffer);
+            Assert.DoesNotContain(guid5, listener.TraceBuffer);
+        }
+
         [Fact(DisplayName = "LogggerTests : LogMessage")]
         public void LogMessage()
         {

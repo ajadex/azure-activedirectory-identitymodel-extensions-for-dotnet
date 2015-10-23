@@ -91,7 +91,7 @@ namespace System.IdentityModel.Tokens.Jwt
         internal const string IDX10718 = "IDX10718: Deserializing payload: '{0}' from the token.";
         internal const string IDX10719 = "IDX10719: Token string length greater than maximum length allowed. Token string length: {0}";
         internal const string IDX10720 = "IDX10720: Token string does not match the token format: header.payload.signature";
-        internal const string IDX10721 = "IDX10721: Creating payload and header from the passed parameters including issuer, audience, signing credentials and others.";
+        internal const string IDX10721 = "IDX10721: Creating JwtSecurityToken: Issuer: '{0}', Audience: '{1}'";
         internal const string IDX10722 = "IDX10722: Creating security token from the header: '{0}', payload: '{1}' and raw signature: '{2}'.";
 
 #pragma warning restore 1591

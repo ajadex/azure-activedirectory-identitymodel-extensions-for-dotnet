@@ -36,7 +36,7 @@ namespace System.IdentityModel.Tokens
         public SigningCredentials(SecurityKey key, string algorithm)
         {
             if (key == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, GetType() + ": key", EventLevel.Verbose);
+                throw LogHelper.LogException<ArgumentNullException>(EventLevel.Verbose, LogMessages.IDX10000, GetType() + "key");
 
             if (string.IsNullOrEmpty(algorithm))
                 throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, GetType() + ": algorithm", EventLevel.Verbose);
