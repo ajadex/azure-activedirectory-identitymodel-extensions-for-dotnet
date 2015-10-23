@@ -37,7 +37,6 @@ namespace Microsoft.IdentityModel.Logging
     [EventSource(Name = "Microsoft.IdentityModel.EventSource")]
     public class IdentityModelEventSource : EventSource
     {
-
         static IdentityModelEventSource()
         {
             Logger = new IdentityModelEventSource();
@@ -53,13 +52,47 @@ namespace Microsoft.IdentityModel.Logging
         /// </summary>
         public static IdentityModelEventSource Logger { get; }
 
+        [Event(6, Level = EventLevel.LogAlways)]
+        public void WriteAlways(string message)
+        {
+            if (IsEnabled())
+            {
+                message = PrepareMessage(EventLevel.LogAlways, message);
+                WriteEvent(6, message);
+            }
+        }
+
+        [NonEvent]
+        public void WriteAlways(string message, params object[] args)
+        {
+            if (IsEnabled())
+            {
+                if (args != null)
+                    WriteAlways(string.Format(CultureInfo.InvariantCulture, message, args));
+                else
+                    WriteAlways(message);
+            }
+        }
+
         [Event(1, Level = EventLevel.Verbose)]
         public void WriteVerbose(string message)
         {
             if (IsEnabled() && LogLevel >= EventLevel.Verbose)
             {
-                message = PrepareMessage(message, EventLevel.Verbose);
+                message = PrepareMessage(EventLevel.Verbose, message);
                 WriteEvent(1, message);
+            }
+        }
+
+        [NonEvent]
+        public void WriteVerbose(string message, params object[] args)
+        {
+            if (IsEnabled() && LogLevel >= EventLevel.Verbose)
+            {
+                if (args != null)
+                    WriteVerbose(string.Format(CultureInfo.InvariantCulture, message, args));
+                else
+                    WriteVerbose(message);
             }
         }
 
@@ -68,8 +101,20 @@ namespace Microsoft.IdentityModel.Logging
         {
             if (IsEnabled() && LogLevel >= EventLevel.Informational)
             {
-                message = PrepareMessage(message, EventLevel.Informational);
+                message = PrepareMessage(EventLevel.Informational, message);
                 WriteEvent(2, message);
+            }
+        }
+
+        [NonEvent]
+        public void WriteInformation(string message, params object[] args)
+        {
+            if (IsEnabled() && LogLevel >= EventLevel.Informational)
+            {
+                if (args != null)
+                    WriteInformation(string.Format(CultureInfo.InvariantCulture, message, args));
+                else
+                    WriteInformation(message);
             }
         }
 
@@ -78,9 +123,18 @@ namespace Microsoft.IdentityModel.Logging
         {
             if (IsEnabled() && LogLevel >= EventLevel.Warning)
             {
-                message = PrepareMessage(message, EventLevel.Warning);
+                message = PrepareMessage(EventLevel.Warning, message);
                 WriteEvent(3, message);
             }
+        }
+
+        [NonEvent]
+        public void WriteWarning(string message, params object[] args)
+        {
+            if (args != null)
+                WriteWarning(string.Format(CultureInfo.InvariantCulture, message, args));
+            else
+                WriteWarning(message);
         }
 
         [Event(4, Level = EventLevel.Error)]
@@ -88,8 +142,20 @@ namespace Microsoft.IdentityModel.Logging
         {
             if (IsEnabled() && LogLevel >= EventLevel.Error)
             {
-                message = PrepareMessage(message, EventLevel.Error);
+                message = PrepareMessage(EventLevel.Error, message);
                 WriteEvent(4, message);
+            }
+        }
+
+        [NonEvent]
+        public void WriteError(string message, params object[] args)
+        {
+            if (IsEnabled() && LogLevel >= EventLevel.Error)
+            {
+                if (args != null)
+                    WriteError(string.Format(CultureInfo.InvariantCulture, message, args));
+                else
+                    WriteError(message);
             }
         }
 
@@ -98,38 +164,60 @@ namespace Microsoft.IdentityModel.Logging
         {
             if (IsEnabled() && LogLevel >= EventLevel.Critical)
             {
-                message = PrepareMessage(message, EventLevel.Critical);
-                WriteEvent(5, message);
+                message = PrepareMessage(EventLevel.Critical, message);
+                WriteEvent(4, message);
             }
         }
 
         [NonEvent]
-        public void Write(EventLevel level, string message, Exception innerException)
+        public void WriteCritical(string message, params object[] args)
+        {
+            if (IsEnabled() && LogLevel >= EventLevel.Critical)
+            {
+                if (args != null)
+                    WriteCritical(string.Format(CultureInfo.InvariantCulture, message, args));
+                else
+                    WriteCritical(message);
+            }
+        }
+
+        [NonEvent]
+        public void Write(EventLevel level, Exception innerException, string message)
+        {
+            Write(level, innerException, message, null);
+        }
+
+        [NonEvent]
+        public void Write(EventLevel level, Exception innerException, string message, params object[] args)
         {
             if (innerException != null)
             {
-                message = string.Format(CultureInfo.InvariantCulture, "Message: {0}, InnerException: {1}", message, innerException.ToString());
+                message = string.Format(CultureInfo.InvariantCulture, "Message: {0}, InnerException: {1}", message, innerException.Message);
             }
 
             switch (level)
             {
+                case EventLevel.LogAlways:
+                    WriteAlways(message, args);
+                    break;
                 case EventLevel.Critical:
-                    WriteCritical(message);
+                    WriteCritical(message, args);
                     break;
                 case EventLevel.Error:
-                    WriteError(message);
+                    WriteError(message, args);
                     break;
                 case EventLevel.Warning:
-                    WriteWarning(message);
+                    WriteWarning(message, args);
                     break;
                 case EventLevel.Informational:
-                    WriteInformation(message);
+                    WriteInformation(message, args);
                     break;
                 case EventLevel.Verbose:
-                    WriteVerbose(message);
+                    WriteVerbose(message, args);
                     break;
                 default:
-                    WriteError(string.Format(CultureInfo.InvariantCulture, LogMessages.MIML11002, level.ToString()));
+                    WriteError(string.Format(CultureInfo.InvariantCulture, LogMessages.MIML11002, level));
+                    WriteError(message, args);
                     break;
             }
         }
@@ -142,12 +230,14 @@ namespace Microsoft.IdentityModel.Logging
             get; set;
         }
 
-        private string PrepareMessage(string message, EventLevel level)
+        private string PrepareMessage(EventLevel level, string message, params object[] args)
         {
             if (message == null)
-            {
-                return message;
-            }
+                return string.Empty;
+
+            if (args != null)
+                return string.Format(CultureInfo.InvariantCulture, "[{0}]{1} {2}", level.ToString(), DateTime.UtcNow.ToString(), 
+                    string.Format(CultureInfo.InvariantCulture, message, args));
 
             return string.Format(CultureInfo.InvariantCulture, "[{0}]{1} {2}", level.ToString(), DateTime.UtcNow.ToString(), message);
         }

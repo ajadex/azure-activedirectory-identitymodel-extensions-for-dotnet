@@ -684,26 +684,19 @@ namespace System.IdentityModel.Tokens.Jwt
 
             JwtSecurityToken jwt = ReadJwtToken(token);
             byte[] encodedBytes = Encoding.UTF8.GetBytes(jwt.RawHeader + "." + jwt.RawPayload);
-            byte[] signatureBytes = Base64UrlEncoder.DecodeBytes(jwt.RawSignature);
-
-            if (signatureBytes == null)
+            if (string.IsNullOrEmpty(jwt.RawSignature))
             {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": signatureBytes"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
-
-            if (signatureBytes.Length == 0)
-            {
-                if (!validationParameters.RequireSignedTokens)
-                {
+                if (validationParameters.RequireSignedTokens)
+                    throw LogHelper.LogException<SecurityTokenInvalidSignatureException>(LogMessages.IDX10504, token);
+                else
                     return jwt;
-                }
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10504, jwt.ToString()), typeof(SecurityTokenInvalidSignatureException), EventLevel.Error);
             }
+
+            byte[] signatureBytes = Base64UrlEncoder.DecodeBytes(jwt.RawSignature);
 
             // if the kid != null and the signature fails, throw SecurityTokenSignatureKeyNotFoundException
             string kid = jwt.Header.Kid;
             IEnumerable<SecurityKey> securityKeys = null;
-
             if (validationParameters.IssuerSigningKeyResolver != null)
             {
                 securityKeys = validationParameters.IssuerSigningKeyResolver(token, jwt, kid, validationParameters);
@@ -733,7 +726,7 @@ namespace System.IdentityModel.Tokens.Jwt
                 {
                     try
                     {
-                        if (this.ValidateSignature(encodedBytes, signatureBytes, securityKey, jwt.Header.Alg))
+                        if (ValidateSignature(encodedBytes, signatureBytes, securityKey, jwt.Header.Alg))
                         {
                             IdentityModelEventSource.Logger.WriteInformation(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10242, token));
                             jwt.SigningKey = securityKey;
@@ -744,7 +737,9 @@ namespace System.IdentityModel.Tokens.Jwt
                     {
                         exceptionStrings.AppendLine(ex.ToString());
                     }
-                    keysAttempted.AppendLine(CreateKeyString(securityKey));
+
+                    if (securityKey != null)
+                        keysAttempted.AppendLine(securityKey.ToString() + " , KeyId: " + securityKey.KeyId);
                 }
 
                 if (keysAttempted.Length > 0)
@@ -763,23 +758,6 @@ namespace System.IdentityModel.Tokens.Jwt
             if (validationParameters.IssuerSigningKeys != null)
                 foreach (SecurityKey securityKey in validationParameters.IssuerSigningKeys)
                     yield return securityKey;
-        }
-
-        /// <summary>
-        /// Produces a readable string for a key, used in error messages.
-        /// </summary>
-        /// <param name="securityKey"></param>
-        /// <returns></returns>
-        private static string CreateKeyString(SecurityKey securityKey)
-        {
-            if (securityKey == null)
-            {
-                IdentityModelEventSource.Logger.WriteVerbose(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, "securityKey"));
-                return "null";
-            }
-
-            return securityKey.ToString() + " , KeyId: " + securityKey.KeyId;
-
         }
 
         /// <summary>
@@ -868,9 +846,7 @@ namespace System.IdentityModel.Tokens.Jwt
         protected virtual string CreateActorValue(ClaimsIdentity actor)
         {
             if (actor == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": actor"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10003, "actor");
 
             if (actor.BootstrapContext != null)
             {
@@ -988,6 +964,7 @@ namespace System.IdentityModel.Tokens.Jwt
                 {
                     return validationParameters.IssuerSigningKey;
                 }
+
                 if (validationParameters.IssuerSigningKeys != null)
                 {
                     foreach (SecurityKey signingKey in validationParameters.IssuerSigningKeys)

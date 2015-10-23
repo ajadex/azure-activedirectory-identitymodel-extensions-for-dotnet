@@ -45,7 +45,7 @@ namespace Microsoft.IdentityModel.Logging
         /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
         public static void Throw(string message, Type exceptionType, EventLevel eventLevel = EventLevel.Error, Exception innerException = null)
         {
-            IdentityModelEventSource.Logger.Write(eventLevel, message, innerException);
+            IdentityModelEventSource.Logger.Write(eventLevel, innerException, message);
 
             if (innerException != null)
                 throw (Exception)Activator.CreateInstance(exceptionType, message, innerException);
@@ -117,7 +117,8 @@ namespace Microsoft.IdentityModel.Logging
                 message = format;
 
             if (IdentityModelEventSource.Logger.IsEnabled() && IdentityModelEventSource.Logger.LogLevel >= eventLevel)
-                IdentityModelEventSource.Logger.Write(eventLevel, message, innerException);
+                IdentityModelEventSource.Logger.Write(eventLevel, innerException, message, args);
+
             if (innerException != null)
                 return (T)Activator.CreateInstance(typeof(T), message, innerException);
             else

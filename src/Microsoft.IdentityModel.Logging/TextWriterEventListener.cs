@@ -111,6 +111,7 @@ namespace Microsoft.IdentityModel.Logging
                 _streamWriter.Flush();
                 _streamWriter.Dispose();
             }
+
             base.Dispose();
         }
     }

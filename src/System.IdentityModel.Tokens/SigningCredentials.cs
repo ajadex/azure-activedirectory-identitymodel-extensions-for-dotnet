@@ -27,7 +27,6 @@
 
 using Microsoft.IdentityModel.Logging;
 using System.Diagnostics.Tracing;
-using System.Globalization;
 
 namespace System.IdentityModel.Tokens
 {

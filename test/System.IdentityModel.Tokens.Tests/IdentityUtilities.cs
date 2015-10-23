@@ -87,10 +87,10 @@ namespace System.IdentityModel.Tokens.Tests
             return (new JwtSecurityTokenHandler()).CreateSignedJwt(tokenDescriptor);
         }
 
-        public static JwtSecurityToken CreateJwtSecurityToken(string issuer, string originalIssuer, IEnumerable<Claim> claims, SigningCredentials signingCredentials)
+        public static JwtSecurityToken CreateJwtSecurityToken(string issuer, string audience, IEnumerable<Claim> claims, DateTime? nbf, DateTime? exp, SigningCredentials signingCredentials)
         {
-            JwtPayload payload = new JwtPayload(issuer, "urn:uri", claims, DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromHours(10));
-            JwtHeader header = new JwtHeader(signingCredentials);
+            JwtPayload payload = new JwtPayload(issuer, audience, claims, nbf, exp);
+            JwtHeader header = (signingCredentials != null) ? new JwtHeader(signingCredentials) : new JwtHeader();
             return new JwtSecurityToken(header, payload);
         }
 

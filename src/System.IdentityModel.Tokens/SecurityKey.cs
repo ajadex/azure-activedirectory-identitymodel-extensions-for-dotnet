@@ -39,12 +39,12 @@ namespace System.IdentityModel.Tokens
 
         public SignatureProvider GetSignatureProviderForSigning(string algorithm)
         {
-            return GetSignatureProvider(algorithm, true);
+            return GetSignatureProvider(algorithm, false);
         }
 
         public SignatureProvider GetSignatureProviderForValidating(string algorithm)
         {
-            return GetSignatureProvider(algorithm, false);
+            return GetSignatureProvider(algorithm, true);
         }
 
         public abstract SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly);

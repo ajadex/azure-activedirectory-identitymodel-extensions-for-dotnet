@@ -890,7 +890,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             validationParameters.SignatureValidator = IdentityUtilities.SignatureValidatorReturnsTokenAsIs;
             TestUtilities.ValidateToken(JwtTestUtilities.GetJwtParts(EncodedJwts.Asymmetric_1024, "Parts-0-1"), validationParameters, tokenHandler, expectedException);
 
-            expectedException = ExpectedException.SecurityTokenInvalidSignatureException(substringExpected: "IDX10506:");
+            expectedException = ExpectedException.SecurityTokenInvalidSignatureException(substringExpected: "IDX10505:");
             validationParameters.SignatureValidator = ((token, parameters) => { return null; });
             TestUtilities.ValidateToken(JwtTestUtilities.GetJwtParts(EncodedJwts.Asymmetric_1024, "Parts-0-1"), validationParameters, tokenHandler, expectedException);
 
