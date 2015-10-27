@@ -406,16 +406,15 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
             TokenValidationParameters validationParameters = new TokenValidationParameters
             {
-                IssuerSigningKey = KeyingMaterial.RsaSecurityKey_2048_Public,
+                RequireSignedTokens = false,
                 ValidateAudience = false,
-                ValidateIssuer = false,
+                ValidateIssuer = false
             };
 
-            string issuer = "https://gotjwt.com";
             DateTime utcNow = DateTime.UtcNow;
             DateTime expire = utcNow + TimeSpan.FromHours(1);
-            ClaimsIdentity subject = new ClaimsIdentity(claims: ClaimSets.RoleClaimsShortType(issuer, issuer));
-            JwtSecurityToken jwtToken = handler.CreateToken(issuer: issuer, signingCredentials: KeyingMaterial.RSASigningCreds_2048, subject: subject) as JwtSecurityToken;
+            ClaimsIdentity subject = new ClaimsIdentity(claims: ClaimSets.RoleClaimsShortType());
+            JwtSecurityToken jwtToken = handler.CreateToken(IdentityUtilities.DefaultIssuer, IdentityUtilities.DefaultAudience, subject, utcNow, expire) as JwtSecurityToken;
 
             SecurityToken securityToken;
             ClaimsPrincipal principal = handler.ValidateToken(jwtToken.RawData, validationParameters, out securityToken);
@@ -423,17 +422,17 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             ClaimsIdentity expectedIdentity =
                 new ClaimsIdentity(
                     authenticationType: "Federation",
-                    claims: ClaimSets.RoleClaimsLongType(issuer, issuer)
+                    claims: ClaimSets.RoleClaimsLongType()
                     );
 
-            Claim claim = new Claim(type: JwtRegisteredClaimNames.Iss, value: issuer, valueType: ClaimValueTypes.String, issuer: issuer);
-            expectedIdentity.AddClaim(claim);
+            expectedIdentity.AddClaim(new Claim(JwtRegisteredClaimNames.Iss, IdentityUtilities.DefaultIssuer, ClaimValueTypes.String, IdentityUtilities.DefaultIssuer));
+            expectedIdentity.AddClaim(new Claim(JwtRegisteredClaimNames.Aud, IdentityUtilities.DefaultAudience, ClaimValueTypes.String, IdentityUtilities.DefaultIssuer));
 
-            claim = new Claim(JwtRegisteredClaimNames.Exp, EpochTime.GetIntDate(expire).ToString(), valueType: "JSON", issuer: issuer);
+            Claim claim = new Claim(JwtRegisteredClaimNames.Exp, EpochTime.GetIntDate(expire).ToString(), "JSON", IdentityUtilities.DefaultIssuer);
             claim.Properties.Add(JwtSecurityTokenHandler.JsonClaimTypeProperty, "System.Int64");
             expectedIdentity.AddClaim(claim);
 
-            claim = new Claim(JwtRegisteredClaimNames.Nbf, EpochTime.GetIntDate(utcNow).ToString(), valueType: "JSON", issuer: issuer);
+            claim = new Claim(JwtRegisteredClaimNames.Nbf, EpochTime.GetIntDate(utcNow).ToString(), "JSON", IdentityUtilities.DefaultIssuer);
             claim.Properties.Add(JwtSecurityTokenHandler.JsonClaimTypeProperty, "System.Int64");
             expectedIdentity.AddClaim(claim);
 

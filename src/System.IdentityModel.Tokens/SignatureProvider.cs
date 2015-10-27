@@ -39,9 +39,6 @@ namespace System.IdentityModel.Tokens
             if (key == null)
                 throw LogHelper.LogException<ArgumentNullException>("key");
 
-            if (string.IsNullOrEmpty(algorithm))
-                throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10000, "algorithm");
-
             Key = key;
             Algorithm = algorithm;
         }

@@ -60,13 +60,13 @@ namespace System.IdentityModel.Tokens.Jwt
             : base(StringComparer.Ordinal)
         {
             if (signingCredentials == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "SigningCredentials");
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "signingCredentials");
 
             SigningCredentials = signingCredentials;
 
-            this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
             this[JwtHeaderParameterNames.Alg] = signingCredentials.Algorithm;
             this[JwtHeaderParameterNames.Kid] = signingCredentials.Key.KeyId;
+            this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
         }
 
         /// <summary>

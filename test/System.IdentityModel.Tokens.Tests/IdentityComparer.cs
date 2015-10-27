@@ -45,14 +45,27 @@ namespace System.IdentityModel.Tokens.Tests
             IgnoreSubject = true;
             StringComparison = System.StringComparison.Ordinal;
         }
+
+        public CompareContext(CompareContext other)
+        {
+            ExpectRawData = other.ExpectRawData;
+            IgnoreClaimsIdentityType = other.IgnoreClaimsIdentityType;
+            IgnoreClaimsPrincipalType = other.IgnoreClaimsPrincipalType;
+            IgnoreClaimType = other.IgnoreClaimType;
+            IgnoreProperties = other.IgnoreProperties;
+            IgnoreSubject = other.IgnoreSubject;
+            IgnoreType = other.IgnoreType;
+            StringComparison = other.StringComparison;
+        }
+
         public List<string> Diffs { get { return _diffs; } }
         public bool ExpectRawData { get; set; }
-        public bool IgnoreProperties { get; set; }
-        public bool IgnoreSubject { get; set; }
-        public bool IgnoreType { get; set; }
         public bool IgnoreClaimsIdentityType { get; set; }
         public bool IgnoreClaimsPrincipalType { get; set; }
         public bool IgnoreClaimType { get; set; }
+        public bool IgnoreProperties { get; set; }
+        public bool IgnoreSubject { get; set; }
+        public bool IgnoreType { get; set; }
         public StringComparison StringComparison { get; set; }
         public string Title { get; set; }
     }
@@ -89,7 +102,7 @@ namespace System.IdentityModel.Tokens.Tests
 
             int numMatched = 0;
             int numToMatch = toMatch.Count;
-
+            CompareContext localContext = new CompareContext(context);
             List<KeyValuePair<T,T>> matchedTs = new List<KeyValuePair<T,T>>();
             
             // helps debugging to see what didn't match
@@ -99,7 +112,7 @@ namespace System.IdentityModel.Tokens.Tests
                 bool matched = false;
                 for (int i = 0; i < toMatch.Count; i++)
                 {
-                    if (areEqual(t, toMatch[i], context))
+                    if (areEqual(t, toMatch[i], localContext))
                     {
                         numMatched++;
                         matchedTs.Add(new KeyValuePair<T, T>(toMatch[i], t));
@@ -136,6 +149,9 @@ namespace System.IdentityModel.Tokens.Tests
                     }
                 }
             }
+
+            if (notMatched.Count != 0)
+                context.Diffs.AddRange(localContext.Diffs);
 
             return (notMatched.Count == 0);
         }

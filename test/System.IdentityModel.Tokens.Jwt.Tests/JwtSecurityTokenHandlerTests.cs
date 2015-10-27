@@ -503,9 +503,8 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
 
             // Test outgoing
             var outgoingToken = handler.CreateToken(subject: new ClaimsIdentity(new Claim[] { internalClaim }));
-            var mappedClaim = System.Linq.Enumerable.FirstOrDefault(outgoingToken.Claims);
-            Assert.NotNull(mappedClaim);
-            Assert.Equal("jwtClaim", mappedClaim.Type);
+            var wasClaimMapped = System.Linq.Enumerable.Contains<Claim>(outgoingToken.Claims, jwtClaim, new ClaimComparer());
+            Assert.True(wasClaimMapped);
 
             // Test incoming
             var incomingToken = handler.CreateToken(issuer: "Test Issuer", subject: new ClaimsIdentity(new Claim[] { jwtClaim, unwantedClaim }));
@@ -1039,6 +1038,22 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             validationParameters.ValidateAudience = false;
             validationParameters.AudienceValidator = IdentityUtilities.AudienceValidatorThrows;
             TestUtilities.ValidateToken(securityToken: jwt, validationParameters: validationParameters, tokenValidator: tokenHandler, expectedException: ExpectedException.NoExceptionExpected);
+        }
+
+        class ClaimComparer : IEqualityComparer<Claim>
+        {
+            public bool Equals(Claim x, Claim y)
+            {
+                if (x.Type == y.Type && x.Value == y.Value)
+                    return true;
+
+                return false;
+            }
+
+            public int GetHashCode(Claim obj)
+            {
+                throw new NotImplementedException();
+            }
         }
     }    
 }
