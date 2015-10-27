@@ -165,7 +165,7 @@ namespace Microsoft.IdentityModel.Logging
             if (IsEnabled() && LogLevel >= EventLevel.Critical)
             {
                 message = PrepareMessage(EventLevel.Critical, message);
-                WriteEvent(4, message);
+                WriteEvent(5, message);
             }
         }
 

@@ -76,6 +76,27 @@ namespace Microsoft.IdentityModel.Logging
         /// Logs an event using the event source logger and returns new typed exception.
         /// </summary>
         /// <param name="message">message to log.</param>
+        /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        public static T LogException<T>(Exception innerException, string message) where T : Exception
+        {
+            return LogException<T>(EventLevel.Error, innerException, message, null);
+        }
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
+        /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        public static T LogException<T>(Exception innerException, string message, params object[] args) where T : Exception
+        {
+            return LogException<T>(EventLevel.Error, innerException, message, args);
+        }
+
+
+        /// <summary>
+        /// Logs an event using the event source logger and returns new typed exception.
+        /// </summary>
+        /// <param name="message">message to log.</param>
         public static T LogException<T>(EventLevel eventLevel, string message) where T : Exception
         {
             return LogException<T>(eventLevel, null, message, null);
