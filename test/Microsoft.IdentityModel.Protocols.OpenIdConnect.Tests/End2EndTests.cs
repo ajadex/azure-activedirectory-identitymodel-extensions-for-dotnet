@@ -58,6 +58,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect.Tests
                     ClaimSets.DefaultClaimsIdentity,
                     DateTime.UtcNow,
                     DateTime.UtcNow + TimeSpan.FromHours(1),
+                    DateTime.UtcNow + TimeSpan.FromHours(1),
                     rsaSigningCredentials);
 
             tokenHandler.WriteToken(jwtToken);

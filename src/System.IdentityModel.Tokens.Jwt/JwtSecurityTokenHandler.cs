@@ -298,39 +298,41 @@ namespace System.IdentityModel.Tokens.Jwt
         }
 
         /// <summary>
-        /// Creates a signed Json Web Token (JWT).
+        /// Returns a Json Web Token (JWT).
         /// </summary>
         /// <param name="tokenDescriptor"> a <see cref="SecurityTokenDescriptor"/> that contains details of token contents and <see cref="SignatureProvider"/>.
-        public string CreateSignedJwt(SecurityTokenDescriptor tokenDescriptor)
+        public string CreateJwt(SecurityTokenDescriptor tokenDescriptor)
         {
             if (tokenDescriptor == null)
                 throw LogHelper.LogArgumentNullException("tokenDescriptor");
 
-            if (tokenDescriptor.SignatureProvider == null)
-                throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10000, "tokenDescriptor.SignatureProvider");
+            return (CreateJwt(
+                tokenDescriptor.Issuer,
+                tokenDescriptor.Audience,
+                tokenDescriptor.Claims,
+                tokenDescriptor.NotBefore,
+                tokenDescriptor.Expires,
+                tokenDescriptor.IssuedAt,
+                tokenDescriptor.SigningCredentials)).RawData;
+        }
 
-            DateTime? exp = null;
-            DateTime? nbf = null;
-            DateTime? iat = null;
+        /// <summary>
+        /// Creates a Json Web Token (JWT).
+        /// </summary>
+        /// <param name="tokenDescriptor"> a <see cref="SecurityTokenDescriptor"/> that contains details of token contents and <see cref="SignatureProvider"/>.
+        public JwtSecurityToken CreateJwtSecurityToken(SecurityTokenDescriptor tokenDescriptor)
+        {
+            if (tokenDescriptor == null)
+                throw LogHelper.LogArgumentNullException("tokenDescriptor");
 
-            if (SetDefaultTimesOnTokenCreation && (!tokenDescriptor.NotBefore.HasValue || !tokenDescriptor.Expires.HasValue || !tokenDescriptor.IssuedAt.HasValue))
-            {
-                DateTime now = DateTime.UtcNow;
-                if (!tokenDescriptor.Expires.HasValue)
-                    exp = now + TimeSpan.FromMinutes(TokenLifetimeInMinutes);
-
-                if (!tokenDescriptor.NotBefore.HasValue)
-                    nbf = now;
-
-                if (!tokenDescriptor.IssuedAt.HasValue)
-                    iat = now;
-            }
-
-            JwtPayload payload = new JwtPayload(tokenDescriptor.Issuer, tokenDescriptor.Audience, tokenDescriptor.Claims, nbf, exp, iat);
-            JwtHeader header = new JwtHeader(tokenDescriptor.SignatureProvider.Key.KeyId, tokenDescriptor.SignatureProvider.Algorithm);
-            string encodedToken = string.Concat(header.Base64UrlEncode(), ".", payload.Base64UrlEncode());
-
-            return encodedToken + "." + Base64UrlEncoder.Encode(tokenDescriptor.SignatureProvider.Sign(Encoding.UTF8.GetBytes(encodedToken)));
+            return CreateJwt(
+                tokenDescriptor.Issuer,
+                tokenDescriptor.Audience,
+                tokenDescriptor.Claims,
+                tokenDescriptor.NotBefore,
+                tokenDescriptor.Expires,
+                tokenDescriptor.IssuedAt,
+                tokenDescriptor.SigningCredentials);
         }
 
         /// <summary>
@@ -342,39 +344,46 @@ namespace System.IdentityModel.Tokens.Jwt
         /// <param name="subject">the source of the <see cref="Claim"/>(s) for this token.</param>
         /// <param name="notBefore">the notbefore time for this token.</param> 
         /// <param name="expires">the expiration time for this token.</param>
+        /// <param name="issuedAt">the issue time for this token.</param>/// 
         /// <param name="signingCredentials">contains cryptographic material for generating a signature.</param>
-        /// <param name="signatureProvider">optional <see cref="SignatureProvider"/>.</param>
         /// <remarks>If <see cref="ClaimsIdentity.Actor"/> is not null, then a claim { actort, 'value' } will be added to the payload. <see cref="CreateActorValue"/> for details on how the value is created.
         /// <para>See <seealso cref="JwtHeader"/> for details on how the HeaderParameters are added to the header.</para>
         /// <para>See <seealso cref="JwtPayload"/> for details on how the values are added to the payload.</para>
         /// <para>Each <see cref="Claim"/> on the <paramref name="subject"/> added will have <see cref="Claim.Type"/> translated according to the mapping found in
         /// <see cref="OutboundClaimTypeMap"/>. Adding and removing to <see cref="OutboundClaimTypeMap"/> will affect the name component of the Json claim</para>
         /// </remarks>
-        /// <para>If signautureProvider is not null, then it will be used to create the signature and <see cref="System.IdentityModel.Tokens.SignatureProviderFactory.CreateForSigning( SecurityKey, string )"/> will not be called.</para>
         /// <returns>A <see cref="JwtSecurityToken"/>.</returns>
         /// <exception cref="ArgumentException">if 'expires' &lt;= 'notBefore'.</exception>
-        public virtual JwtSecurityToken CreateToken(string issuer = null, string audience = null, ClaimsIdentity subject = null, DateTime? notBefore = null, DateTime? expires = null, SigningCredentials signingCredentials = null)
+        public virtual JwtSecurityToken CreateToken(string issuer = null, string audience = null, ClaimsIdentity subject = null, DateTime? notBefore = null, DateTime? expires = null, DateTime? issuedAt = null, SigningCredentials signingCredentials = null)
+        {
+            var jwt = CreateJwt(issuer, audience, (subject != null ? subject.Claims : null), notBefore, expires, issuedAt, signingCredentials);
+            if (subject != null && subject.Actor != null)
+            {
+                jwt.Payload.AddClaim(new Claim(JwtRegisteredClaimNames.Actort, this.CreateActorValue(subject.Actor)));
+            }
+
+            return jwt;
+        }
+
+        private JwtSecurityToken CreateJwt(string issuer, string audience, IEnumerable<Claim> claims, DateTime? notBefore, DateTime? expires, DateTime? issuedAt, SigningCredentials signingCredentials)
         {
             // if not set, use defaults
-            if (SetDefaultTimesOnTokenCreation && (!notBefore.HasValue || !expires.HasValue))
+            if (SetDefaultTimesOnTokenCreation && (!expires.HasValue || !issuedAt.HasValue || !notBefore.HasValue))
             {
                 DateTime now = DateTime.UtcNow;
                 if (!expires.HasValue)
                     expires = now + TimeSpan.FromMinutes(TokenLifetimeInMinutes);
+
+                if (!issuedAt.HasValue)
+                    issuedAt = now;
 
                 if (!notBefore.HasValue)
                     notBefore = now;
             }
 
             IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10721, (audience ?? "null"), (issuer ?? "null"));
-            IEnumerable<Claim> subjectClaims = subject == null ? null : OutboundClaimTypeTransform(subject.Claims);
-            JwtPayload payload = new JwtPayload(issuer, audience, subjectClaims, notBefore, expires);            
-            JwtHeader header = signingCredentials == null ? new JwtHeader() : new JwtHeader(signingCredentials);
-
-            if (subject != null && subject.Actor != null)
-            {
-                payload.AddClaim(new Claim(JwtRegisteredClaimNames.Actort, this.CreateActorValue(subject.Actor)));
-            }
+            JwtPayload payload = new JwtPayload(issuer, audience, (claims == null ? null : OutboundClaimTypeTransform(claims)), notBefore, expires, issuedAt);
+            JwtHeader header = new JwtHeader(signingCredentials);
 
             string rawHeader = header.Base64UrlEncode();
             string rawPayload = payload.Base64UrlEncode();
@@ -931,7 +940,7 @@ namespace System.IdentityModel.Tokens.Jwt
         }
 
         /// <summary>
-        /// Gets or sets a bool that controls if token creation will set default 'exp' and 'nbf' if not specified.
+        /// Gets or sets a bool that controls if token creation will set default 'exp', 'nbf' and 'iat' if not specified.
         /// </summary>
         /// <remarks>see: <see cref="DefaultTokenLifetimeInMinutes"/>, <see cref="TokenLifetimeInMinutes"/> for defaults and configuration.</remarks>
         [DefaultValue(true)]

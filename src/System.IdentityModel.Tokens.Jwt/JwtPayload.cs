@@ -325,7 +325,14 @@ namespace System.IdentityModel.Tokens.Jwt
                         {
                             foreach(var item in values)
                             {
-                                claims.Add(new Claim(keyValuePair.Key, item.ToString()));
+                                if (item.Type == Newtonsoft.Json.Linq.JTokenType.String)
+                                    claims.Add(new Claim(keyValuePair.Key, item.ToString(), ClaimValueTypes.String, issuer, issuer));
+                                else
+                                {
+                                    c = new Claim(keyValuePair.Key, item.ToString(), JwtConstants.JsonClaimValueType, issuer, issuer);
+                                    c.Properties[JwtSecurityTokenHandler.JsonClaimTypeProperty] = item.GetType().ToString();
+                                    claims.Add(c);
+                                }
                             }
                             continue;
                         }

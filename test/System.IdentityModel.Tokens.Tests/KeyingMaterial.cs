@@ -105,13 +105,13 @@ namespace System.IdentityModel.Tokens.Tests
 
             RsaSecurityKey_1024 = new RsaSecurityKey(RsaParameters_1024);
             RsaSecurityKey_1024_Public = new RsaSecurityKey(RsaParameters_1024_Public);
-            RsaSecurityKey_2048 = new RsaSecurityKey(RsaParameters_2048);
+            RsaSecurityKey_2048 = new RsaSecurityKey(RsaParameters_2048) { KeyId = Guid.NewGuid().ToString() };
             RsaSecurityKey_2048_Public = new RsaSecurityKey(RsaParameters_2048_Public);
             RsaSecurityKey_4096 = new RsaSecurityKey(RsaParameters_4096);
             RsaSecurityKey_4096_Public = new RsaSecurityKey(RsaParameters_4096_Public);
             RSASigningCreds_1024 = new SigningCredentials(RsaSecurityKey_1024, SecurityAlgorithms.RsaSha256Signature);
             RSASigningCreds_1024_Public = new SigningCredentials(RsaSecurityKey_1024_Public, SecurityAlgorithms.RsaSha256Signature);
-            RSASigningCreds_2048 = new SigningCredentials(RsaSecurityKey_2048, SecurityAlgorithms.RsaSha256Signature);
+            RSASigningCreds_2048 = new SigningCredentials(RsaSecurityKey_2048, SecurityAlgorithms.RSA_SHA256);
             RSASigningCreds_2048_Public = new SigningCredentials(RsaSecurityKey_2048_Public, SecurityAlgorithms.RsaSha256Signature);
             RSASigningCreds_4096 = new SigningCredentials(RsaSecurityKey_2048, SecurityAlgorithms.RsaSha256Signature);
             RSASigningCreds_4096_Public = new SigningCredentials(RsaSecurityKey_2048_Public, SecurityAlgorithms.RsaSha256Signature);

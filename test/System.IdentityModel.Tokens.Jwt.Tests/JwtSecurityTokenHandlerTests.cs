@@ -401,6 +401,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             handler = new JwtSecurityTokenHandler();
             handler.InboundClaimFilter.Add("exp");
             handler.InboundClaimFilter.Add("nbf");
+            handler.InboundClaimFilter.Add("iat");
             handler.InboundClaimTypeMap = new Dictionary<string, string>()
             {
                 { JwtRegisteredClaimNames.Email, "Mapped_" + JwtRegisteredClaimNames.Email },
@@ -529,6 +530,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             Assert.True(handler.CanValidateToken, "!handler.CanValidateToken");
             Assert.True(handler.CanWriteToken, "!handler.CanWriteToken");
             Assert.True(handler.TokenType == typeof(JwtSecurityToken), "handler.TokenType != typeof(JwtSecurityToken)");
+            Assert.True(handler.SetDefaultTimesOnTokenCreation);
         }
 
 #if JWT_XML
@@ -702,15 +704,14 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                                         tokenHandler,
                                         ExpectedException.NoExceptionExpected);
 #endif
-
             JwtSecurityToken jwt = tokenHandler.CreateToken(
                 IdentityUtilities.DefaultIssuer,
                 IdentityUtilities.DefaultAudience,
                 ClaimSets.DefaultClaimsIdentity,
                 DateTime.UtcNow,
                 DateTime.UtcNow + TimeSpan.FromHours(1),
+                DateTime.UtcNow + TimeSpan.FromHours(1),
                 IdentityUtilities.DefaultAsymmetricSigningCredentials);
-
 
             TokenValidationParameters validationParameters =
                 new TokenValidationParameters()

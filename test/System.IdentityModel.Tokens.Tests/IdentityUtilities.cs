@@ -84,12 +84,12 @@ namespace System.IdentityModel.Tokens.Tests
 
         public static string CreateJwtSecurityToken(SecurityTokenDescriptor tokenDescriptor)
         {
-            return (new JwtSecurityTokenHandler()).CreateSignedJwt(tokenDescriptor);
+            return (new JwtSecurityTokenHandler()).CreateJwt(tokenDescriptor);
         }
 
-        public static JwtSecurityToken CreateJwtSecurityToken(string issuer, string audience, IEnumerable<Claim> claims, DateTime? nbf, DateTime? exp, SigningCredentials signingCredentials)
+        public static JwtSecurityToken CreateJwtSecurityToken(string issuer, string audience, IEnumerable<Claim> claims, DateTime? nbf, DateTime? exp, DateTime? iat, SigningCredentials signingCredentials)
         {
-            JwtPayload payload = new JwtPayload(issuer, audience, claims, nbf, exp);
+            JwtPayload payload = new JwtPayload(issuer, audience, claims, nbf, exp, iat);
             JwtHeader header = (signingCredentials != null) ? new JwtHeader(signingCredentials) : new JwtHeader();
             return new JwtSecurityToken(header, payload);
         }
@@ -227,6 +227,7 @@ public static string DefaultJwt(SecurityTokenDescriptor securityTokenDescriptor)
                     audience: securityTokenDescriptor.Audience,
                     expires: securityTokenDescriptor.Expires,
                     notBefore: securityTokenDescriptor.NotBefore,
+                    issuedAt: securityTokenDescriptor.IssuedAt,
                     issuer: securityTokenDescriptor.Issuer,
                     subject: new ClaimsIdentity(securityTokenDescriptor.Claims),
                     signingCredentials: KeyingMaterial.DefaultX509SigningCreds_2048_RsaSha2_Sha2
@@ -243,7 +244,7 @@ public static string DefaultJwt(SecurityTokenDescriptor securityTokenDescriptor)
                 Issuer = DefaultIssuer,
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow + TimeSpan.FromDays(1),
-                SignatureProvider = signingCredentials.Key.GetSignatureProviderForSigning(signingCredentials.Algorithm)
+                SigningCredentials = signingCredentials
             };
         }
 

@@ -26,7 +26,6 @@
 //------------------------------------------------------------------------------
 
 using Microsoft.IdentityModel.Logging;
-using System.Diagnostics.Tracing;
 
 namespace System.IdentityModel.Tokens
 {
@@ -35,10 +34,10 @@ namespace System.IdentityModel.Tokens
         public SigningCredentials(SecurityKey key, string algorithm)
         {
             if (key == null)
-                throw LogHelper.LogException<ArgumentNullException>(EventLevel.Verbose, LogMessages.IDX10000, GetType() + "key");
+                throw LogHelper.LogArgumentNullException("key");
 
             if (string.IsNullOrEmpty(algorithm))
-                throw LogHelper.LogException<ArgumentNullException>(EventLevel.Verbose, LogMessages.IDX10000, GetType() + ": algorithm");
+                throw LogHelper.LogArgumentNullException("algorithm");
 
             Algorithm = algorithm;
             Key = key;

@@ -42,10 +42,8 @@ namespace System.IdentityModel.Tokens.Jwt
         /// Initializes a new instance of the <see cref="JwtHeader"/> class. Default string comparer <see cref="StringComparer.Ordinal"/>.
         /// </summary>
         public JwtHeader()
-            : base(StringComparer.Ordinal)
+            : this(null)
         {
-            this[JwtHeaderParameterNames.Alg] = JwtAlgorithms.NONE;
-            this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
         }
 
         /// <summary>
@@ -59,32 +57,18 @@ namespace System.IdentityModel.Tokens.Jwt
             : base(StringComparer.Ordinal)
         {
             if (signingCredentials == null)
-                throw LogHelper.LogArgumentNullException("signingCredentials");
+            {
+                this[JwtHeaderParameterNames.Alg] = SecurityAlgorithms.NONE;
+            }
+            else
+            {
+                this[JwtHeaderParameterNames.Alg] = signingCredentials.Algorithm;
+                if (!string.IsNullOrEmpty(signingCredentials.Key.KeyId))
+                    this[JwtHeaderParameterNames.Kid] = signingCredentials.Key.KeyId;
+            }
 
+            this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
             SigningCredentials = signingCredentials;
-
-            this[JwtHeaderParameterNames.Alg] = signingCredentials.Algorithm;
-            this[JwtHeaderParameterNames.Kid] = signingCredentials.Key.KeyId;
-            this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtHeader"/> class. With the Header Parameters:
-        /// <para>{ { typ, <see cref="JwtConstants.HeaderType"/> }, { alg, &lt;algorithm> }, {kid, &lt;keyId> }</para>
-        /// </summary>
-        /// <exception cref="ArgumentException">if 'keyId' or 'algorithm' is null or Empty.</exception>
-        public JwtHeader(string keyId, string algorithm)
-            : base(StringComparer.Ordinal)
-        {
-            if(string.IsNullOrEmpty(keyId))
-                throw LogHelper.LogArgumentNullException("keyId");
-
-            if (string.IsNullOrEmpty(algorithm))
-                throw LogHelper.LogArgumentNullException("algorithm");
-
-            this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
-            this[JwtHeaderParameterNames.Kid] = keyId;
-            this[JwtHeaderParameterNames.Alg] = algorithm;
         }
 
         /// <summary>

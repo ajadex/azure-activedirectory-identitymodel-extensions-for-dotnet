@@ -45,6 +45,6 @@ namespace System.IdentityModel.Tokens
 
         public DateTime? NotBefore { get; set; }
 
-        public SignatureProvider SignatureProvider { get; set; }
+        public SigningCredentials SigningCredentials { get; set; }
     }
 }
