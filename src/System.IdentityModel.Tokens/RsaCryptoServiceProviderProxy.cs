@@ -39,21 +39,17 @@ namespace System.IdentityModel.Tokens
     {
         private const int PROV_RSA_AES = 24;    // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
 
-        private bool disposed;
+        private bool _disposed;
         
         // Only dispose of the RsaCryptoServiceProvider object if we created a new instance that supports SHA-256,
         // otherwise do not disposed of the referenced RsaCryptoServiceProvider
-        private bool disposeRsa;
-
-        private RSACryptoServiceProvider rsa;
+        private bool _disposeRsa;
+        private RSACryptoServiceProvider _rsa;
 
         public RSACryptoServiceProviderProxy(RSACryptoServiceProvider rsa)
         {
             if (rsa == null)
-            {
-                LogHelper.Throw(LogMessages.IDX10507, typeof(ArgumentException));
-                return;
-            }
+                throw LogHelper.LogArgumentNullException("rsa");
 
             //
             // If the provider does not understand SHA256, 
@@ -76,15 +72,15 @@ namespace System.IdentityModel.Tokens
                 //
                 csp.Flags |= CspProviderFlags.UseExistingKey;
 
-                this.rsa = new RSACryptoServiceProvider(csp);
+                this._rsa = new RSACryptoServiceProvider(csp);
 
                 // since we created a new RsaCryptoServiceProvider we need to dispose it
-                this.disposeRsa = true;
+                this._disposeRsa = true;
             }
             else
             {
                 // no work-around necessary
-                this.rsa = rsa;
+                this._rsa = rsa;
             }
         }
 
@@ -101,28 +97,28 @@ namespace System.IdentityModel.Tokens
 
         public byte[] SignData(byte[] signingInput, object hash)
         {
-            return this.rsa.SignData(signingInput, hash);
+            return this._rsa.SignData(signingInput, hash);
         }
 
         public bool VerifyData(byte[] signingInput, object hash, byte[] signature)
         {
-            return this.rsa.VerifyData(signingInput, hash, signature);
+            return this._rsa.VerifyData(signingInput, hash, signature);
         }
 
         private void Dispose(bool disposing)
         {
-            if (!this.disposed)
+            if (!this._disposed)
             {
                 if (disposing)
                 {
-                    if (this.disposeRsa && this.rsa != null)
+                    if (this._disposeRsa && this._rsa != null)
                     {
-                        this.rsa.Dispose();
-                        this.rsa = null;
+                        this._rsa.Dispose();
+                        this._rsa = null;
                     }
                 }
 
-                this.disposed = true;
+                this._disposed = true;
             }
         }
     }

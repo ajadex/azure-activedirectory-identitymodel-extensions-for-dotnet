@@ -25,11 +25,10 @@
 //
 //------------------------------------------------------------------------------
 
+using Microsoft.IdentityModel.Logging;
 using System.Collections.Generic;
-//using System.Globalization;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-using Microsoft.IdentityModel.Logging;
 using System.Threading;
 
 namespace System.IdentityModel.Tokens.Jwt
@@ -52,7 +51,7 @@ namespace System.IdentityModel.Tokens.Jwt
         public JwtSecurityToken(string jwtEncodedString)
         {
             if (null == jwtEncodedString)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "jwtEncodedString");
+                throw LogHelper.LogArgumentNullException("jwtEncodedString");
 
             if (string.IsNullOrWhiteSpace(jwtEncodedString))
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10002, "jwtEncodedString");
@@ -85,10 +84,10 @@ namespace System.IdentityModel.Tokens.Jwt
         public JwtSecurityToken(JwtHeader header, JwtPayload payload, string rawHeader, string rawPayload, string rawSignature)
         {
             if (header == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "header");
+                throw LogHelper.LogArgumentNullException("header");
 
             if (payload == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "payload");
+                throw LogHelper.LogArgumentNullException("payload");
 
             if (string.IsNullOrWhiteSpace(rawHeader))
                 throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10002, "rawHeader");
@@ -97,7 +96,7 @@ namespace System.IdentityModel.Tokens.Jwt
                 throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10002, "rawPayload");
 
             if (rawSignature == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "rawSignature");
+                throw LogHelper.LogArgumentNullException("rawSignature");
 
             Header = header;
             Payload = payload;
@@ -118,10 +117,10 @@ namespace System.IdentityModel.Tokens.Jwt
         public JwtSecurityToken(JwtHeader header, JwtPayload payload)
         {
             if (header == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "header");
+                throw LogHelper.LogArgumentNullException("header");
 
             if (payload == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "payload");
+                throw LogHelper.LogArgumentNullException("payload");
 
             Header = header;
             Payload = payload;

@@ -133,7 +133,7 @@ namespace Microsoft.IdentityModel.Protocols
         public virtual string GetParameter(string parameter)
         {
             if (string.IsNullOrEmpty(parameter))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "parameter");
+                throw LogHelper.LogArgumentNullException("parameter");
 
             string value = null;
             _parameters.TryGetValue(parameter, out value);
@@ -214,7 +214,7 @@ namespace Microsoft.IdentityModel.Protocols
         public void SetParameter(string parameter, string value) 
         {
             if (string.IsNullOrEmpty(parameter))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "parameter");
+                throw LogHelper.LogArgumentNullException("parameter");
 
             if (value == null)
             {

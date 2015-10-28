@@ -37,20 +37,12 @@ namespace Microsoft.IdentityModel.Logging
     public class LogHelper
     {
         /// <summary>
-        /// Logs an event using the event source logger and throws the exception.
+        /// Logs an event using the event source logger and returns new <see cref="ArgumentNullException"/> exception.
         /// </summary>
-        /// <param name="message">message to log.</param>
-        /// <param name="exceptionType">Type of the exception to be thrown.</param>
-        /// <param name="eventLevel">Identifies the level of an event to be logged. Default is Error.</param>
-        /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
-        public static void Throw(string message, Type exceptionType, EventLevel eventLevel = EventLevel.Error, Exception innerException = null)
+        /// <param name="argument">argument that is null or empty.</param>
+        public static ArgumentNullException LogArgumentNullException(string argument)
         {
-            IdentityModelEventSource.Logger.Write(eventLevel, innerException, message);
-
-            if (innerException != null)
-                throw (Exception)Activator.CreateInstance(exceptionType, message, innerException);
-            else
-                throw (Exception)Activator.CreateInstance(exceptionType, message);
+            return LogException<ArgumentNullException>(EventLevel.Error, null, "IDX10000: The parameter '{0}' cannot be a 'null' or an empty object.", argument);
         }
 
         /// <summary>
@@ -75,8 +67,8 @@ namespace Microsoft.IdentityModel.Logging
         /// <summary>
         /// Logs an event using the event source logger and returns new typed exception.
         /// </summary>
-        /// <param name="message">message to log.</param>
         /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        /// <param name="message">message to log.</param>
         public static T LogException<T>(Exception innerException, string message) where T : Exception
         {
             return LogException<T>(EventLevel.Error, innerException, message, null);
@@ -85,17 +77,18 @@ namespace Microsoft.IdentityModel.Logging
         /// <summary>
         /// Logs an event using the event source logger and returns new typed exception.
         /// </summary>
-        /// <param name="message">message to log.</param>
         /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
-        public static T LogException<T>(Exception innerException, string message, params object[] args) where T : Exception
+        /// <param name="format">message to log.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        public static T LogException<T>(Exception innerException, string format, params object[] args) where T : Exception
         {
-            return LogException<T>(EventLevel.Error, innerException, message, args);
+            return LogException<T>(EventLevel.Error, innerException, format, args);
         }
-
 
         /// <summary>
         /// Logs an event using the event source logger and returns new typed exception.
         /// </summary>
+        /// <param name="eventLevel">Identifies the level of an event to be logged.</param>
         /// <param name="message">message to log.</param>
         public static T LogException<T>(EventLevel eventLevel, string message) where T : Exception
         {
@@ -110,13 +103,13 @@ namespace Microsoft.IdentityModel.Logging
         {
             return LogException<T>(eventLevel, null, format, args);
         }
-      
+
         /// <summary>
         /// Logs an event using the event source logger and returns new typed exception.
         /// </summary>
-        /// <param name="message">message to log.</param>
         /// <param name="eventLevel">Identifies the level of an event to be logged. Default is Error.</param>
         /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        /// <param name="message">message to log.</param>
         public static T LogException<T>(EventLevel eventLevel, Exception innerException, string message) where T : Exception
         {
             return LogException<T>(eventLevel, innerException, message, null);
@@ -125,9 +118,10 @@ namespace Microsoft.IdentityModel.Logging
         /// <summary>
         /// Logs an event using the event source logger and returns new typed exception.
         /// </summary>
-        /// <param name="format">message to log.</param>
-        /// <param name="logLevel">Identifies the level of an event to be logged. Default is Error.</param>
+        /// <param name="eventLevel">Identifies the level of an event to be logged. Default is Error.</param>
         /// <param name="innerException">the inner <see cref="Exception"/> to be added to the outer exception.</param>
+        /// <param name="format">message to log.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static T LogException<T>(EventLevel eventLevel, Exception innerException, string format, params object[] args) where T : Exception
         {
             string message = null;

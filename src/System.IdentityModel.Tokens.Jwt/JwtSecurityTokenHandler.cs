@@ -273,7 +273,7 @@ namespace System.IdentityModel.Tokens.Jwt
         public override bool CanReadToken(string tokenString)
         {
             if (tokenString == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "tokenstring");
+                throw LogHelper.LogArgumentNullException("tokenstring");
 
             if (tokenString.Length * 2 > this.MaximumTokenSizeInBytes)
             {
@@ -304,7 +304,7 @@ namespace System.IdentityModel.Tokens.Jwt
         public string CreateSignedJwt(SecurityTokenDescriptor tokenDescriptor)
         {
             if (tokenDescriptor == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "tokenDescriptor");
+                throw LogHelper.LogArgumentNullException("tokenDescriptor");
 
             if (tokenDescriptor.SignatureProvider == null)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10000, "tokenDescriptor.SignatureProvider");
@@ -410,7 +410,7 @@ namespace System.IdentityModel.Tokens.Jwt
         public JwtSecurityToken ReadJwtToken(string token)
         {
             if (token == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "token");
+                throw LogHelper.LogArgumentNullException("token");
 
             if (token.Length * 2 > MaximumTokenSizeInBytes)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10209, token.Length, MaximumTokenSizeInBytes);
@@ -450,10 +450,10 @@ namespace System.IdentityModel.Tokens.Jwt
         public virtual ClaimsPrincipal ValidateToken(string token, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
         {
             if (string.IsNullOrWhiteSpace(token))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "token");
+                throw LogHelper.LogArgumentNullException("token");
 
             if (validationParameters == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             if (token.Length > MaximumTokenSizeInBytes)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10209, token.Length, MaximumTokenSizeInBytes);
@@ -578,7 +578,7 @@ namespace System.IdentityModel.Tokens.Jwt
         public override string WriteToken(SecurityToken token)
         {
             if (token == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "token");
+                throw LogHelper.LogArgumentNullException("token");
 
             JwtSecurityToken jwt = token as JwtSecurityToken;
             if (jwt == null)
@@ -601,10 +601,10 @@ namespace System.IdentityModel.Tokens.Jwt
         internal static string CreateEncodedSignature(string input, SignatureProvider signatureProvider)
         {
             if (input == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "input");
+                throw LogHelper.LogArgumentNullException("input");
 
             if (signatureProvider == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "signatureProvider");
+                throw LogHelper.LogArgumentNullException("signatureProvider");
 
             return Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes(input)));
         }
@@ -636,10 +636,10 @@ namespace System.IdentityModel.Tokens.Jwt
         protected virtual JwtSecurityToken ValidateSignature(string token, TokenValidationParameters validationParameters)
         {
             if (string.IsNullOrWhiteSpace(token))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "token");
+                throw LogHelper.LogArgumentNullException("token");
 
             if (validationParameters == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             JwtSecurityToken jwt = ReadJwtToken(token);
             byte[] encodedBytes = Encoding.UTF8.GetBytes(jwt.RawHeader + "." + jwt.RawPayload);
@@ -729,7 +729,7 @@ namespace System.IdentityModel.Tokens.Jwt
         protected virtual ClaimsIdentity CreateClaimsIdentity(JwtSecurityToken jwt, string issuer, TokenValidationParameters validationParameters)
         {
             if (jwt == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "jwt");
+                throw LogHelper.LogArgumentNullException("jwt");
 
             if (string.IsNullOrWhiteSpace(issuer))
                 IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10244, ClaimsIdentity.DefaultIssuer);
@@ -882,10 +882,10 @@ namespace System.IdentityModel.Tokens.Jwt
         protected virtual SecurityKey ResolveIssuerSigningKey(string token, JwtSecurityToken securityToken, TokenValidationParameters validationParameters)
         {
             if (validationParameters == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             if (securityToken == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "securityToken");
+                throw LogHelper.LogArgumentNullException("securityToken");
 
             if (!string.IsNullOrEmpty(securityToken.Header.Kid))
             {

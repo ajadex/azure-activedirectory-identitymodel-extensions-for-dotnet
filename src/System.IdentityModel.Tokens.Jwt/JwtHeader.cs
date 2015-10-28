@@ -27,7 +27,6 @@
 
 using Microsoft.IdentityModel.Logging;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace System.IdentityModel.Tokens.Jwt
 {
@@ -60,7 +59,7 @@ namespace System.IdentityModel.Tokens.Jwt
             : base(StringComparer.Ordinal)
         {
             if (signingCredentials == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "signingCredentials");
+                throw LogHelper.LogArgumentNullException("signingCredentials");
 
             SigningCredentials = signingCredentials;
 
@@ -78,10 +77,10 @@ namespace System.IdentityModel.Tokens.Jwt
             : base(StringComparer.Ordinal)
         {
             if(string.IsNullOrEmpty(keyId))
-                throw LogHelper.LogException<ArgumentException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : keyId"));
+                throw LogHelper.LogArgumentNullException("keyId");
 
             if (string.IsNullOrEmpty(algorithm))
-                throw LogHelper.LogException<ArgumentException>(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, " : algorithm"));
+                throw LogHelper.LogArgumentNullException("algorithm");
 
             this[JwtHeaderParameterNames.Typ] = JwtConstants.HeaderType;
             this[JwtHeaderParameterNames.Kid] = keyId;

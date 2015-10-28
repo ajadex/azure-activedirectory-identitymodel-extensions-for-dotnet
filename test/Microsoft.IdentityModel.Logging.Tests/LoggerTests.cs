@@ -48,7 +48,7 @@ namespace Microsoft.IdentityModel.Logging.Tests
             var guid = Guid.NewGuid().ToString();
             try
             {
-                LogHelper.Throw(guid, typeof(ArgumentNullException), EventLevel.Verbose);
+                throw LogHelper.LogException<ArgumentNullException>(guid);
             }
             catch (Exception ex)
             {

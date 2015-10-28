@@ -35,10 +35,10 @@ namespace System.IdentityModel.Tokens
         public ECDsaSecurityKey(byte[] blob, CngKeyBlobFormat blobFormat)
         {
             if (blob == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "blob");
+                throw LogHelper.LogArgumentNullException("blob");
 
             if (blobFormat == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "blobFormat");
+                throw LogHelper.LogArgumentNullException("blobFormat");
 
             CngKey = CngKey.Import(blob, blobFormat);
             BlobFormat = blobFormat;

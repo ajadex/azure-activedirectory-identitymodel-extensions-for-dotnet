@@ -43,7 +43,7 @@ namespace Microsoft.IdentityModel.Protocols
         public async Task<string> GetDocumentAsync(string address, CancellationToken cancel)
         {
             if (string.IsNullOrWhiteSpace(address))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "address");
+                throw LogHelper.LogArgumentNullException("address");
 
             try
             {

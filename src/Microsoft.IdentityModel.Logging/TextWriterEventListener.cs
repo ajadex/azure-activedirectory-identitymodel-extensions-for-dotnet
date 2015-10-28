@@ -52,7 +52,8 @@ namespace Microsoft.IdentityModel.Logging
             }
             catch (Exception ex)
             {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.MIML11001, ex.Message), ex.GetType(), EventLevel.Error, ex.InnerException);
+                LogHelper.LogException<InvalidOperationException>(ex, LogMessages.MIML11001);
+                throw ex;
             }
         }
 
@@ -63,9 +64,8 @@ namespace Microsoft.IdentityModel.Logging
         public TextWriterEventListener(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.MIML10000, GetType() + ": filePath"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("filePath");
+
             Stream fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
             _streamWriter = new StreamWriter(fileStream);
             _streamWriter.AutoFlush = true;
@@ -78,9 +78,8 @@ namespace Microsoft.IdentityModel.Logging
         public TextWriterEventListener(StreamWriter streamWriter)
         {
             if (streamWriter == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.MIML10000, GetType() + ": streamWriter"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("streamWriter");
+
             _streamWriter = streamWriter;
             _disposeStreamWriter = false;
         }
@@ -88,9 +87,7 @@ namespace Microsoft.IdentityModel.Logging
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
             if (eventData == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.MIML10000, GetType() + ": eventData"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("eventData");
 
             if (eventData.Payload == null || eventData.Payload.Count <= 0)
             {

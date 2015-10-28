@@ -49,7 +49,7 @@ namespace System.IdentityModel.Tokens
         public static void ValidateAudience(IEnumerable<string> audiences, SecurityToken securityToken, TokenValidationParameters validationParameters)
         {
             if(validationParameters == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             if (!validationParameters.ValidateAudience)
             {
@@ -110,7 +110,7 @@ namespace System.IdentityModel.Tokens
         public static string ValidateIssuer(string issuer, SecurityToken securityToken, TokenValidationParameters validationParameters)
         {
             if (validationParameters == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             if (!validationParameters.ValidateIssuer)
             {
@@ -156,7 +156,7 @@ namespace System.IdentityModel.Tokens
         public static void ValidateIssuerSecurityKey(SecurityKey securityKey, SecurityToken securityToken, TokenValidationParameters validationParameters)
         {
             if (validationParameters == null)
-                LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             if (!validationParameters.ValidateIssuerSigningKey)
             {
@@ -187,7 +187,7 @@ namespace System.IdentityModel.Tokens
         public static void ValidateLifetime(DateTime? notBefore, DateTime? expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
         {
             if (validationParameters == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             if (!validationParameters.ValidateLifetime)
             {
@@ -226,10 +226,10 @@ namespace System.IdentityModel.Tokens
         public static void ValidateTokenReplay(string securityToken, DateTime? expirationTime, TokenValidationParameters validationParameters)
         {
             if (string.IsNullOrWhiteSpace(securityToken))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "securityToken");
+                throw LogHelper.LogArgumentNullException("securityToken");
 
             if (validationParameters == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "validationParameters");
+                throw LogHelper.LogArgumentNullException("validationParameters");
 
             // check if token if replay cache is set, then there must be an expiration time.
             if (validationParameters.TokenReplayCache != null)

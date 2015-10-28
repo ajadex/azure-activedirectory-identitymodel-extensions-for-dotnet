@@ -26,7 +26,6 @@
 //------------------------------------------------------------------------------
 
 using Microsoft.IdentityModel.Logging;
-using System.Globalization;
 using System.Text;
 
 namespace System.IdentityModel.Tokens
@@ -37,7 +36,7 @@ namespace System.IdentityModel.Tokens
     public static class Base64UrlEncoder
     {
         private static char base64PadCharacter = '=';
-        private static string doubleBase64PadCharacter = string.Format(CultureInfo.InvariantCulture, "{0}{0}", base64PadCharacter);
+        private static string doubleBase64PadCharacter = "==";
         private static char base64Character62 = '+';
         private static char base64Character63 = '/';
         private static char base64UrlCharacter62 = '-';
@@ -54,9 +53,7 @@ namespace System.IdentityModel.Tokens
         public static string Encode(string arg)
         {
             if (null == arg)
-            {
-                throw new ArgumentNullException(arg);
-            }
+                throw LogHelper.LogArgumentNullException("arg");
 
             return Encode(Encoding.UTF8.GetBytes(arg));
         }
@@ -74,7 +71,7 @@ namespace System.IdentityModel.Tokens
         public static string Encode(byte[] inArray, int offset, int length)
         {
             if (inArray == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "inArray");
+                throw LogHelper.LogArgumentNullException("inArray");
 
             string s = Convert.ToBase64String(inArray, offset, length);
             s = s.Split(base64PadCharacter)[0]; // Remove any trailing padding
@@ -94,7 +91,7 @@ namespace System.IdentityModel.Tokens
         public static string Encode(byte[] inArray)
         {
             if (inArray == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "inArray");
+                throw LogHelper.LogArgumentNullException("inArray");
 
             string s = Convert.ToBase64String(inArray, 0, inArray.Length);
             s = s.Split(base64PadCharacter)[0]; // Remove any trailing padding

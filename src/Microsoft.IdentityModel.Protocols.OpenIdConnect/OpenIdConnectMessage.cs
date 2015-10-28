@@ -25,13 +25,11 @@
 //
 //------------------------------------------------------------------------------
 
+using Microsoft.IdentityModel.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.Tracing;
-using System.Globalization;
-using Microsoft.IdentityModel.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
 {
@@ -60,9 +58,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
         protected OpenIdConnectMessage(OpenIdConnectMessage other)
         {
             if (other == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": other"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("other");
 
             foreach (KeyValuePair<string, string> keyValue in other.Parameters)
             {
@@ -82,9 +78,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
         public OpenIdConnectMessage(NameValueCollection nameValueCollection)
         {
             if (nameValueCollection == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": nameValueCollection"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("nameValueCollection");
 
             foreach (var key in nameValueCollection.AllKeys)
             {
@@ -102,9 +96,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
         public OpenIdConnectMessage(IEnumerable<KeyValuePair<string, string[]>> parameters)
         {
             if (parameters == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": parameters"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("parameters");
 
             foreach (KeyValuePair<string, string[]> keyValue in parameters)
             {
@@ -129,9 +121,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
         public OpenIdConnectMessage(JObject json)
         {
             if (json == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, "OpenIdConnectMessage.json"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("json");
 
             foreach (var pair in json)
             {

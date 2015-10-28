@@ -64,7 +64,7 @@ namespace System.IdentityModel.Tokens
             : base(key, algorithm)
         {
             if (key == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "key");
+                throw LogHelper.LogArgumentNullException("key");
 
             if (!IsSupportedAlgorithm(algorithm))
                 throw LogHelper.LogException<InvalidOperationException>(LogMessages.IDX10640, (algorithm ?? "null"));
@@ -112,7 +112,7 @@ namespace System.IdentityModel.Tokens
         protected virtual KeyedHashAlgorithm GetKeyedHashAlgorithm(string algorithm)
         {
             if (string.IsNullOrWhiteSpace(algorithm))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "algorithm");
+                throw LogHelper.LogArgumentNullException("algorithm");
 
             switch (algorithm)
             {
@@ -133,7 +133,7 @@ namespace System.IdentityModel.Tokens
         public override byte[] Sign(byte[] input)
         {
             if (input == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "input");
+                throw LogHelper.LogArgumentNullException("input");
 
             if (input.Length == 0)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10624);
@@ -164,10 +164,10 @@ namespace System.IdentityModel.Tokens
         public override bool Verify(byte[] input, byte[] signature)
         {
             if (input == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "input");
+                throw LogHelper.LogArgumentNullException("input");
 
             if (signature == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "signature");
+                throw LogHelper.LogArgumentNullException("signature");
 
             if (input.Length == 0)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10625);

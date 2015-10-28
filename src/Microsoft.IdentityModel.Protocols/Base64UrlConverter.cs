@@ -43,7 +43,7 @@ namespace Microsoft.IdentityModel.Protocols
         private static string ToBase64UrlString(byte[] input)
         {
             if (input == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "input");
+                throw LogHelper.LogArgumentNullException("input");
 
             return Convert.ToBase64String( input ).TrimEnd( '=' ).Replace( '+', '-' ).Replace( '/', '_' );
         }
@@ -56,7 +56,7 @@ namespace Microsoft.IdentityModel.Protocols
         private static byte[] FromBase64UrlString(string input)
         {
             if (string.IsNullOrEmpty(input))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "input");
+                throw LogHelper.LogArgumentNullException("input");
 
             return Convert.FromBase64String( Pad( input.Replace( '-', '+' ).Replace( '_', '/' ) ) );
         }

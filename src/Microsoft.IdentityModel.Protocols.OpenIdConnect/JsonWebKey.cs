@@ -29,8 +29,6 @@ using Microsoft.IdentityModel.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Globalization;
 
 namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
 {
@@ -65,9 +63,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
         public JsonWebKey(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": json"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogArgumentNullException("json");
 
             var key = JsonConvert.DeserializeObject<JsonWebKey>(json);
             Copy(key);
@@ -159,7 +155,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
             set
             {
                 if (value == null)
-                    LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10001, GetType() + ": KeyOps"), typeof(ArgumentNullException), EventLevel.Verbose);
+                    throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10001, "KeyOps");
 
                 foreach (string keyOp in value)
                     _keyops.Add(keyOp);
@@ -238,7 +234,7 @@ namespace Microsoft.IdentityModel.Protocols.OpenIdConnect
             set
             {
                 if (value == null)
-                    LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10001, GetType() + ": X5c"), typeof(ArgumentNullException), EventLevel.Verbose);
+                    throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10001, "X5c");
 
                 foreach (string clause in value)
                     _certificateClauses.Add(clause);

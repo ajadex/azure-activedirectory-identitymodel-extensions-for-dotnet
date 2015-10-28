@@ -50,7 +50,7 @@ namespace Microsoft.IdentityModel.Protocols
         public HttpDocumentRetriever(HttpClient httpClient)
         {
             if (httpClient == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "httpClient");
+                throw LogHelper.LogArgumentNullException("httpClient");
 
             _httpClient = httpClient;
             _requireHttps = true;
@@ -68,7 +68,7 @@ namespace Microsoft.IdentityModel.Protocols
         public async Task<string> GetDocumentAsync(string address, CancellationToken cancel)
         {
             if (string.IsNullOrWhiteSpace(address))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "address");
+                throw LogHelper.LogArgumentNullException("address");
 
             if (!Utility.IsHttps(address) && RequireHttps)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10108, address);

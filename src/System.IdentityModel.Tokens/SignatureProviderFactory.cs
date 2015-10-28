@@ -90,10 +90,10 @@ namespace System.IdentityModel.Tokens
         private SignatureProvider CreateProvider(SecurityKey key, string algorithm, bool willCreateSignatures)
         {
             if (key == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "key");
+                throw LogHelper.LogArgumentNullException("key");
 
             if (algorithm == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "algorithm");
+                throw LogHelper.LogArgumentNullException("algorithm");
 
             if (string.IsNullOrWhiteSpace(algorithm))
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10002, "algorithm");

@@ -100,13 +100,13 @@ namespace Microsoft.IdentityModel.Protocols
         public ConfigurationManager(string metadataAddress, IConfigurationRetriever<T> configRetriever, IDocumentRetriever docRetriever)
         {
             if (string.IsNullOrWhiteSpace(metadataAddress))
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "metadataAddress");
+                throw LogHelper.LogArgumentNullException("metadataAddress");
 
             if (configRetriever == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "configRetriever");
+                throw LogHelper.LogArgumentNullException("configRetriever");
 
             if (docRetriever == null)
-                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10000, "docRetriever");
+                throw LogHelper.LogArgumentNullException("docRetriever");
 
 
             _metadataAddress = metadataAddress;
