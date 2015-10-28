@@ -25,13 +25,10 @@
 //
 //------------------------------------------------------------------------------
 
+using Microsoft.IdentityModel.Logging;
 using System;
-using System.Diagnostics.Tracing;
-using System.Globalization;
-using System.IdentityModel.Tokens;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Logging;
 
 namespace Microsoft.IdentityModel.Protocols
 {
@@ -51,9 +48,7 @@ namespace Microsoft.IdentityModel.Protocols
         public StaticConfigurationManager(T configuration)
         {
             if (configuration == null)
-            {
-                LogHelper.Throw(string.Format(CultureInfo.InvariantCulture, LogMessages.IDX10000, GetType() + ": configuration"), typeof(ArgumentNullException), EventLevel.Verbose);
-            }
+                throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10108, "configuration");
 
             _configuration = configuration;
         }
