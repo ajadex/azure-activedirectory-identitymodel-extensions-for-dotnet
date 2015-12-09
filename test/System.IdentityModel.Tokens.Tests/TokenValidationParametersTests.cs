@@ -160,8 +160,8 @@ namespace System.IdentityModel.Tokens.Tests
             TestUtilities.AssertFailIfErrors("TokenValidationParametersTests: GetSets", context.Errors);
 
             Assert.Null(validationParameters.AudienceValidator);
-            Assert.NotNull(validationParameters.ClientDecryptionTokens);
-            Assert.Equal(validationParameters.ClientDecryptionTokens.Count, 0);
+            Assert.NotNull(validationParameters.ClientDecryptionKeys);
+            Assert.Equal(validationParameters.ClientDecryptionKeys.Count, 0);
             Assert.Null(validationParameters.LifetimeValidator);
             Assert.Null(validationParameters.IssuerSigningKeyResolver);
             Assert.Null(validationParameters.IssuerValidator);

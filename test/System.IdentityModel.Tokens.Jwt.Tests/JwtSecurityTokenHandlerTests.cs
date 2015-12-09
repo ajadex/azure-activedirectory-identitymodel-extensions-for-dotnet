@@ -202,7 +202,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             // actor can be set by adding the claim directly
             ClaimsIdentity claimsIdentityAsymmetric = new ClaimsIdentity(ClaimSets.DefaultClaimsIdentity);
             claimsIdentityAsymmetric.AddClaim(new Claim(ClaimTypes.Actor, jwtActorAsymmetric));
-            JwtSecurityToken jwtToken = tokendHandler.CreateToken
+            JwtSecurityToken jwtToken = tokendHandler.CreateJwsToken
                     (issuer: IdentityUtilities.DefaultIssuer,
                      audience: IdentityUtilities.DefaultAudience,
                      subject: claimsIdentityAsymmetric,
@@ -216,7 +216,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             // Validation on actor will fail because the keys are different types
             ClaimsIdentity claimsIdentitySymmetric = new ClaimsIdentity(ClaimSets.DefaultClaimsIdentity);
             claimsIdentitySymmetric.AddClaim(new Claim(ClaimTypes.Actor, jwtActorSymmetric));
-            jwtToken = tokendHandler.CreateToken
+            jwtToken = tokendHandler.CreateJwsToken
                     (issuer: IdentityUtilities.DefaultIssuer,
                      audience: IdentityUtilities.DefaultAudience,
                      subject: claimsIdentitySymmetric,
@@ -350,7 +350,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                         IdentityUtilities.DefaultIssuer
                         ));
 
-            var jwt = handler.CreateToken(
+            var jwt = handler.CreateJwsToken(
                 issuer: IdentityUtilities.DefaultIssuer,
                 audience: IdentityUtilities.DefaultAudience,
                 subject: new ClaimsIdentity(
@@ -407,7 +407,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                 { JwtRegisteredClaimNames.Sub, "Mapped_" + JwtRegisteredClaimNames.Sub },
             };
 
-            jwt = handler.CreateToken(issuer: Issuers.GotJwt, audience: Audiences.AuthFactors, subject: new ClaimsIdentity(claims));
+            jwt = handler.CreateJwsToken(issuer: Issuers.GotJwt, audience: Audiences.AuthFactors, subject: new ClaimsIdentity(claims));
 
             List<Claim> expectedClaims = new List<Claim>()
             {
@@ -500,12 +500,12 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             handler.OutboundClaimTypeMap.Add("internalClaim", "jwtClaim");
 
             // Test outgoing
-            var outgoingToken = handler.CreateToken(subject: new ClaimsIdentity(new Claim[] { internalClaim }));
+            var outgoingToken = handler.CreateJwsToken(subject: new ClaimsIdentity(new Claim[] { internalClaim }));
             var wasClaimMapped = System.Linq.Enumerable.Contains<Claim>(outgoingToken.Claims, jwtClaim, new ClaimComparer());
             Assert.True(wasClaimMapped);
 
             // Test incoming
-            var incomingToken = handler.CreateToken(issuer: "Test Issuer", subject: new ClaimsIdentity(new Claim[] { jwtClaim, unwantedClaim }));
+            var incomingToken = handler.CreateJwsToken(issuer: "Test Issuer", subject: new ClaimsIdentity(new Claim[] { jwtClaim, unwantedClaim }));
             var validationParameters = new TokenValidationParameters
             {
                 RequireSignedTokens = false,
@@ -701,7 +701,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                                         tokenHandler,
                                         ExpectedException.NoExceptionExpected);
 #endif
-            JwtSecurityToken jwt = tokenHandler.CreateToken(
+            JwtSecurityToken jwt = tokenHandler.CreateJwsToken(
                 IdentityUtilities.DefaultIssuer,
                 IdentityUtilities.DefaultAudience,
                 ClaimSets.DefaultClaimsIdentity,
@@ -924,7 +924,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
         public void IssuerValidation()
         {
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            string jwt = (tokenHandler.CreateToken(issuer: IdentityUtilities.DefaultIssuer, audience: IdentityUtilities.DefaultAudience, signingCredentials: IdentityUtilities.DefaultAsymmetricSigningCredentials) as JwtSecurityToken).RawData;
+            string jwt = (tokenHandler.CreateJwsToken(issuer: IdentityUtilities.DefaultIssuer, audience: IdentityUtilities.DefaultAudience, signingCredentials: IdentityUtilities.DefaultAsymmetricSigningCredentials) as JwtSecurityToken).RawData;
             TokenValidationParameters validationParameters = new TokenValidationParameters() { IssuerSigningKey = IdentityUtilities.DefaultAsymmetricSigningKey, ValidateAudience = false, ValidateLifetime = false };
 
             // ValidateIssuer == true, validIssuer null, validIssuers null
@@ -974,51 +974,51 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             // "Jwt.Audience == null"
             TokenValidationParameters validationParameters = new TokenValidationParameters() { ValidateIssuer = false, RequireExpirationTime = false, RequireSignedTokens = false };
             ExpectedException ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10208");
-            string jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: null) as JwtSecurityToken).RawData;
+            string jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: null) as JwtSecurityToken).RawData;
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "jwt.Audience == EmptyString"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10208");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: string.Empty) as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: string.Empty) as JwtSecurityToken).RawData;
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "jwt.Audience == whitespace"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10208");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: "    ") as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: "    ") as JwtSecurityToken).RawData;
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "TokenValidationParameters.ValidAudience TokenValidationParameters.ValidAudiences both null"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10208");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "TokenValidationParameters.ValidAudience empty, TokenValidationParameters.ValidAudiences empty"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10214");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
             validationParameters = new TokenValidationParameters() { RequireExpirationTime = false, RequireSignedTokens = false, ValidAudience = string.Empty, ValidAudiences = new List<string>(), ValidateIssuer = false };
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "TokenValidationParameters.ValidAudience whitespace, TokenValidationParameters.ValidAudiences empty"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10214");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
             validationParameters = new TokenValidationParameters() { RequireExpirationTime = false, RequireSignedTokens = false, ValidAudience = "   ", ValidAudiences = new List<string>(), ValidateIssuer = false };
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "TokenValidationParameters.ValidAudience empty, TokenValidationParameters.ValidAudience one null string"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10214");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
             validationParameters = new TokenValidationParameters() { RequireExpirationTime = false, RequireSignedTokens = false, ValidAudience = "", ValidAudiences = new List<string>() { null }, ValidateIssuer = false };
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "TokenValidationParameters.ValidAudience empty, TokenValidationParameters.ValidAudiences one empty string"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10214");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
             validationParameters = new TokenValidationParameters() { RequireExpirationTime = false, RequireSignedTokens = false, ValidAudience = "", ValidAudiences = new List<string>() { string.Empty }, ValidateIssuer = false };
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 
             // "TokenValidationParameters.ValidAudience string.Empty, TokenValidationParameters.ValidAudiences one string whitespace"
             ee = new ExpectedException(typeof(SecurityTokenInvalidAudienceException), substringExpected: "IDX10214");
-            jwt = (tokenHandler.CreateToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
+            jwt = (tokenHandler.CreateJwsToken(issuer: "http://www.GotJwt.com", audience: "http://www.GotJwt.com") as JwtSecurityToken).RawData;
             validationParameters = new TokenValidationParameters() { RequireExpirationTime = false, RequireSignedTokens = false, ValidAudience = "", ValidAudiences = new List<string>() { "     " }, ValidateIssuer = false };
             TestUtilities.ValidateToken(jwt, validationParameters, tokenHandler, ee);
 

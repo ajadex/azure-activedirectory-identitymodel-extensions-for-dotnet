@@ -56,7 +56,7 @@ namespace System.IdentityModel.Tokens
         /// <exception cref="ArgumentNullException">'key' is null.</exception>
         /// <exception cref="ArgumentNullException">'algorithm' is null.</exception>
         /// <exception cref="ArgumentException">'algorithm' contains only whitespace.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">'<see cref="SymmetricSecurityKey"/>.KeySize' is smaller than <see cref="SignatureProviderFactory.MinimumSymmetricKeySizeInBits"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">'<see cref="SymmetricSecurityKey"/>.KeySize' is smaller than <see cref="CryptoProviderFactory.MinimumSymmetricKeySizeInBits"/>.</exception>
         /// <exception cref="InvalidOperationException"><see cref="SymmetricSecurityKey.GetKeyedHashAlgorithm"/> throws.</exception>
         /// <exception cref="InvalidOperationException"><see cref="SymmetricSecurityKey.GetKeyedHashAlgorithm"/> returns null.</exception>
         /// <exception cref="InvalidOperationException"><see cref="SymmetricSecurityKey.GetSymmetricKey"/> throws.</exception>

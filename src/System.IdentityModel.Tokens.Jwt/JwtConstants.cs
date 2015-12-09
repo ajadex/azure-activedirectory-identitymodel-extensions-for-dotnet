@@ -57,6 +57,8 @@ namespace System.IdentityModel.Tokens.Jwt
         /// </summary>
         public const string JsonCompactSerializationRegex = @"^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$";
 
+        public const string JweCompactSerializationRegex = @"^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$";
+
         /// <summary>
         /// When mapping json to .Net Claim(s), if the value was not a string (or an enumeration of strings), the ClaimValue will serialized using the current JSON serializer, a property will be added with the .Net type and the ClaimTypeValue will be set to 'JsonClaimValueType'.
         /// </summary>
@@ -168,6 +170,8 @@ namespace System.IdentityModel.Tokens.Jwt
         /// see:http://tools.ietf.org/html/rfc7519#section-5
         /// </summary>
         public const string X5u = "x5u";
+
+        public const string Enc = "enc";
     }
     
     /// <summary>
@@ -301,5 +305,20 @@ namespace System.IdentityModel.Tokens.Jwt
         /// http://tools.ietf.org/html/rfc7519#section-4
         /// </summary>
         public const string Website = "website";
+    }
+
+    public enum JwtTypes
+    {
+        JWS,
+        JWE
+    }
+
+    public enum KeyManagementModes
+    {
+        DirectEncryption,
+        DirectKeyAgreement,
+        KeyWrapping,
+        KeyEncryption,
+        KeyAgreementWithKeyWrapping
     }
 }

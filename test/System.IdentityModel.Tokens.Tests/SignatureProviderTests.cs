@@ -34,17 +34,17 @@ namespace System.IdentityModel.Tokens.Tests
 {
     /// <summary>
     /// This class tests:
-    /// SignatureProviderFactory
+    /// CryptoProviderFactory
     /// SignatureProvider
     /// SymmetricSignatureProvider
     /// AsymmetricSignatureProvider
     /// </summary>
     public class SignatureProviderTests
     {
-        [Fact(DisplayName = "SignatureProviderTests: SignatureProviderFactory")]
-        public void SignatureProviderFactory_Tests()
+        [Fact(DisplayName = "SignatureProviderTests: CryptoProviderFactory")]
+        public void CryptoProviderFactory_Tests()
         {
-            SignatureProviderFactory factory = new SignatureProviderFactory();
+            CryptoProviderFactory factory = new CryptoProviderFactory();
 
             // Asymmetric / Symmetric both need signature alg specified
             FactoryCreateFor("Siging:    - algorithm string.Empty", KeyingMaterial.X509SecurityKey_1024, string.Empty, factory, ExpectedException.ArgumentException());
@@ -69,7 +69,7 @@ namespace System.IdentityModel.Tokens.Tests
             ExpectedException expectedException = ExpectedException.ArgumentOutOfRangeException("IDX10628:");
             try
             {
-                Console.WriteLine(string.Format("Testcase: '{0}'", "SignatureProviderFactory.MinimumSymmetricKeySizeInBits < AbsoluteMinimumSymmetricKeySizeInBits"));
+                Console.WriteLine(string.Format("Testcase: '{0}'", "CryptoProviderFactory.MinimumSymmetricKeySizeInBits < AbsoluteMinimumSymmetricKeySizeInBits"));
                 var symmetricSignatureProvider = new SymmetricSignatureProvider(KeyingMaterial.SymmetricSecurityKey2_256, SecurityAlgorithms.HMAC_SHA256);
                 symmetricSignatureProvider.MinimumSymmetricKeySizeInBits = SymmetricSignatureProvider.DefaultMinimumSymmetricKeySizeInBits - 10;
                 expectedException.ProcessNoException();
@@ -80,7 +80,7 @@ namespace System.IdentityModel.Tokens.Tests
             }
         }
 
-        private void FactoryCreateFor(string testcase, SecurityKey key, string algorithm, SignatureProviderFactory factory, ExpectedException expectedException)
+        private void FactoryCreateFor(string testcase, SecurityKey key, string algorithm, CryptoProviderFactory factory, ExpectedException expectedException)
         {
             try
             {

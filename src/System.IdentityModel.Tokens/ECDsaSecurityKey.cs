@@ -60,14 +60,6 @@ namespace System.IdentityModel.Tokens
             }
         }
 
-        public override SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly)
-        {
-            if (verifyOnly)
-                return SignatureProviderFactory.CreateForVerifying(this, algorithm);
-            else
-                return SignatureProviderFactory.CreateForSigning(this, algorithm);
-        }
-
         /// <summary>
         /// <see cref="CngKeyBlobFormat"/> used to initialize the <see cref="CngKey"/>
         /// </summary>

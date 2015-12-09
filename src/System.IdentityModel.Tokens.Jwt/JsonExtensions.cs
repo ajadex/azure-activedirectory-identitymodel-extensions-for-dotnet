@@ -136,5 +136,10 @@ namespace System.IdentityModel.Tokens.Jwt
         {
             return Deserializer(jsonString, typeof(JwtPayload)) as JwtPayload;
         }
+
+        public static JweHeader DeserializeJweHeader(string jsonString)
+        {
+            return Deserializer(jsonString, typeof(JweHeader)) as JweHeader;
+        }
     }
 }

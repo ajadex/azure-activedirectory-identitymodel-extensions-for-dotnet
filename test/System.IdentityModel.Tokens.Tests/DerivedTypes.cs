@@ -228,11 +228,6 @@ namespace System.IdentityModel.Tokens.Tests
 #endif
     public class NotAsymmetricOrSymmetricSecurityKey : SecurityKey
     {
-        public override SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly)
-        {
-            throw new NotImplementedException();
-        }
-
         public override int KeySize
         {
             get { throw new NotImplementedException(); }
@@ -285,11 +280,6 @@ namespace System.IdentityModel.Tokens.Tests
             get { throw new NotImplementedException(); }
         }
 
-        public override SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly)
-        {
-            throw new NotImplementedException();
-        }
-
         public override int KeySize
         {
             get { throw new NotImplementedException(); }
@@ -330,11 +320,6 @@ namespace System.IdentityModel.Tokens.Tests
         }
 
         public override int KeySize { get { return _key.KeySize; } }
-
-        public override SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly)
-        {
-            throw new NotImplementedException();
-        }
 
     }
 
@@ -423,7 +408,7 @@ namespace System.IdentityModel.Tokens.Tests
     /// <summary>
     /// Helpful for extensibility testing for errors.
     /// </summary>
-    public class AlwaysReturnNullSignatureProviderFactory : SignatureProviderFactory
+    public class AlwaysReturnNullCryptoProviderFactory : CryptoProviderFactory
     {
         public override SignatureProvider CreateForSigning(SecurityKey key, string algorithm)
         {

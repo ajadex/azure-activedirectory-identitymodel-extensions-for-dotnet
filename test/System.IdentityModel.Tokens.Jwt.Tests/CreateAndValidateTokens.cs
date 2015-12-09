@@ -156,7 +156,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             var jwt = handler.CreateJwt(createAndValidateParms.SecurityTokenDescriptor);
             var jwtToken = new JwtSecurityToken(jwt);
 
-            var jwtToken2 = handler.CreateToken(
+            var jwtToken2 = handler.CreateJwsToken(
                 createAndValidateParms.SecurityTokenDescriptor.Issuer,
                 createAndValidateParms.SecurityTokenDescriptor.Audience,
                 new ClaimsIdentity(createAndValidateParms.SecurityTokenDescriptor.Claims),
@@ -166,7 +166,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                 createAndValidateParms.SecurityTokenDescriptor.SigningCredentials);
             var jwt2 = handler.WriteToken(jwtToken2);
 
-            var jwtToken3 = handler.CreateJwtSecurityToken(createAndValidateParms.SecurityTokenDescriptor);
+            var jwtToken3 = handler.CreateJwtSecurityToken(createAndValidateParms.SecurityTokenDescriptor, JwtTypes.JWS);
             var jwt3 = handler.WriteToken(jwtToken3);
 
             var context = new CompareContext();
@@ -284,6 +284,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                     Claims = ClaimSets.Simple(IdentityUtilities.DefaultIssuer, IdentityUtilities.DefaultIssuer),
                     SigningCredentials = KeyingMaterial.DefaultSymmetricSigningCreds_256_Sha2,
                     Expires = expires,
+                    IssuedAt = nbf,
                     NotBefore = nbf,
                     Issuer = IdentityUtilities.DefaultIssuer,
                     Audience = IdentityUtilities.DefaultAudience
@@ -307,7 +308,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
 
             // create from security descriptor
             SecurityTokenDescriptor tokenDescriptor = createandValidateParams.SecurityTokenDescriptor;
-            JwtSecurityToken token = handler.CreateToken(
+            JwtSecurityToken token = handler.CreateJwsToken(
                 issuer: tokenDescriptor.Issuer,
                 audience: tokenDescriptor.Audience,
                 expires: tokenDescriptor.Expires,
@@ -445,7 +446,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
             DateTime utcNow = DateTime.UtcNow;
             DateTime expire = utcNow + TimeSpan.FromHours(1);
             ClaimsIdentity subject = new ClaimsIdentity(claims: ClaimSets.RoleClaimsShortType());
-            JwtSecurityToken jwtToken = handler.CreateToken(IdentityUtilities.DefaultIssuer, IdentityUtilities.DefaultAudience, subject, utcNow, expire, utcNow) as JwtSecurityToken;
+            JwtSecurityToken jwtToken = handler.CreateJwsToken(IdentityUtilities.DefaultIssuer, IdentityUtilities.DefaultAudience, subject, utcNow, expire, utcNow) as JwtSecurityToken;
 
             SecurityToken securityToken;
             ClaimsPrincipal principal = handler.ValidateToken(jwtToken.RawData, validationParameters, out securityToken);
@@ -519,7 +520,7 @@ namespace System.IdentityModel.Tokens.Jwt.Tests
                         new Claim(ClaimsIdentity.DefaultRoleClaimType, defaultRole), 
                     });
 
-            JwtSecurityToken jwt = handler.CreateToken(issuer: "https://gotjwt.com", signingCredentials: KeyingMaterial.DefaultX509SigningCreds_2048_RsaSha2_Sha2, subject: subject) as JwtSecurityToken;
+            JwtSecurityToken jwt = handler.CreateJwsToken(issuer: "https://gotjwt.com", signingCredentials: KeyingMaterial.DefaultX509SigningCreds_2048_RsaSha2_Sha2, subject: subject) as JwtSecurityToken;
 
             // Delegates should override any other settings
             validationParameters.NameClaimTypeRetriever = NameClaimTypeDelegate;

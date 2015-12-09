@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -24,30 +24,44 @@
 // THE SOFTWARE.
 //
 //------------------------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
+using Microsoft.IdentityModel.Logging;
 
 namespace System.IdentityModel.Tokens
 {
-    public class SecurityTokenDescriptor
+    public abstract class EncryptionProvider : IDisposable
     {
-        public string Audience { get; set; }
+        protected EncryptionProvider(SecurityKey key, string algorithm)
+        {
+            if (key == null)
+                throw LogHelper.LogException<ArgumentNullException>("key");
 
-        public IEnumerable<Claim> Claims { get; set; }
+            Key = key;
+            Algorithm = algorithm;
+        }
 
-        public DateTime? Expires { get; set; }
+        public string Context { get; set; }
 
-        public string Issuer { get; set; }
+        public string Algorithm { get; private set; }
 
-        public DateTime? IssuedAt { get; set; }
+        public SecurityKey Key { get; private set; }
 
-        public DateTime? NotBefore { get; set; }
+        public abstract byte[] Encrypt(byte[] input);
 
-        public SigningCredentials SigningCredentials { get; set; }
+        public abstract byte[] Decrypt(byte[] input);
 
-        public EncryptingCredentials EncryptingCredentials { get; set; }
+        /// <summary>
+        /// Calls <see cref="Dispose(bool)"/> and <see cref="GC.SuppressFinalize"/>
+        /// </summary>
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
+        /// <summary>
+        /// Can be over written in descendants to dispose of internal components.
+        /// </summary>
+        /// <param name="disposing">true, if called from Dispose(), false, if invoked inside a finalizer</param>     
+        protected abstract void Dispose(bool disposing);
     }
 }

@@ -76,14 +76,6 @@ namespace System.IdentityModel.Tokens
             }
         }
 
-        public override SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly)
-        {
-            if (verifyOnly)
-                return SignatureProviderFactory.CreateForVerifying(this, algorithm);
-            else
-                return SignatureProviderFactory.CreateForSigning(this, algorithm);
-        }
-
         public RSAParameters Parameters
         {
             get

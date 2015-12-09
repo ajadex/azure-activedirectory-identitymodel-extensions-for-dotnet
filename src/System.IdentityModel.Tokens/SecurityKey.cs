@@ -31,29 +31,17 @@ namespace System.IdentityModel.Tokens
 {
     public abstract class SecurityKey
     {
-        private SignatureProviderFactory _signatureProviderFactory = SignatureProviderFactory.Default;
+        private CryptoProviderFactory _CryptoProviderFactory = CryptoProviderFactory.Default;
 
         public abstract int KeySize { get; }
 
         public string KeyId { get; set; }
 
-        public SignatureProvider GetSignatureProviderForSigning(string algorithm)
-        {
-            return GetSignatureProvider(algorithm, false);
-        }
-
-        public SignatureProvider GetSignatureProviderForValidating(string algorithm)
-        {
-            return GetSignatureProvider(algorithm, true);
-        }
-
-        public abstract SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly);
-
-        public SignatureProviderFactory SignatureProviderFactory
+        public CryptoProviderFactory CryptoProviderFactory
         {
             get
             {
-                return _signatureProviderFactory;
+                return _CryptoProviderFactory;
             }
             set
             {
@@ -62,7 +50,7 @@ namespace System.IdentityModel.Tokens
                     throw new ArgumentNullException("value");
                 };
 
-                _signatureProviderFactory = value;
+                _CryptoProviderFactory = value;
             }
         }
     }

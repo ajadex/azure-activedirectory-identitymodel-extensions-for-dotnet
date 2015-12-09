@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Text;
 
 namespace System.IdentityModel.Tokens.Jwt
 {
@@ -57,11 +58,9 @@ namespace System.IdentityModel.Tokens.Jwt
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10002, "jwtEncodedString");
 
             // Quick fix prior to beta8, will add configuration in RC
-            var regex = new Regex(JwtConstants.JsonCompactSerializationRegex);
-            if (regex.MatchTimeout == Timeout.InfiniteTimeSpan)
-            {
-                regex = new Regex(JwtConstants.JsonCompactSerializationRegex, RegexOptions.None, TimeSpan.FromMilliseconds(100));
-            }
+            var regex = new Regex(JwtConstants.JsonCompactSerializationRegex, RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            if (!regex.IsMatch(jwtEncodedString))
+                regex = new Regex(JwtConstants.JweCompactSerializationRegex, RegexOptions.None, TimeSpan.FromMilliseconds(100));
 
             if (!regex.IsMatch(jwtEncodedString))
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10709, "jwtEncodedString", jwtEncodedString);
@@ -148,6 +147,36 @@ namespace System.IdentityModel.Tokens.Jwt
             Payload = new JwtPayload(issuer, audience, claims, notBefore, expires);
             Header = signingCredentials == null ? new JwtHeader() : new JwtHeader(signingCredentials);
             RawSignature = string.Empty;
+        }
+
+        public JwtSecurityToken(JweHeader header, string jweEncryptedKey, byte[] iv, string payload, string authenticationTag)
+        {
+            if (header == null)
+                throw LogHelper.LogArgumentNullException("header");
+
+            if (payload == null)
+                throw LogHelper.LogArgumentNullException("payload");
+
+            JweHeader = header;
+            CipherText = payload;
+            AuthenticationTag = authenticationTag;
+            InitializationVector = iv;
+            JweEncryptedKey = jweEncryptedKey;
+        }
+
+        public JwtSecurityToken(JweHeader header, string jweEncryptedKey, byte[] iv, JwtPayload payload, string authenticationTag)
+        {
+            if (header == null)
+                throw LogHelper.LogArgumentNullException("header");
+
+            if (payload == null)
+                throw LogHelper.LogArgumentNullException("payload");
+
+            JweHeader = header;
+            Payload = payload;
+            AuthenticationTag = authenticationTag;
+            InitializationVector = iv;
+            JweEncryptedKey = jweEncryptedKey;
         }
 
         /// <summary>
@@ -307,6 +336,28 @@ namespace System.IdentityModel.Tokens.Jwt
             get { return Payload.ValidTo; }
         }
 
+        public string AuthenticationTag { get; private set; }
+
+        public JweHeader JweHeader { get; private set; }
+
+        public byte[] InitializationVector { get; private set; }
+
+        public string JweEncryptedKey { get; private set; }
+
+        public string CipherText { get; private set; }
+
+        public string EncryptionAlgorithm
+        {
+            get { return JweHeader.Enc; }
+        }
+
+        public EncryptingCredentials encryptionCredentials
+        {
+            get { return JweHeader.EncryptingCredentials;  }
+        }
+
+        public bool IsJwe { get; set; }
+
         /// <summary>
         /// Serializes the <see cref="JwtHeader"/> and <see cref="JwtPayload"/>
         /// </summary>
@@ -323,8 +374,8 @@ namespace System.IdentityModel.Tokens.Jwt
         internal void Decode(string jwtEncodedString)
         {
             IdentityModelEventSource.Logger.WriteInformation(LogMessages.IDX10716, jwtEncodedString);
-            string[] tokenParts = jwtEncodedString.Split(new char[] { '.' }, 4);
-            if (tokenParts.Length != 3)
+            string[] tokenParts = jwtEncodedString.Split(new char[] { '.' }, 5);
+            if (tokenParts.Length != 3 || tokenParts.Length != 5)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10709, "jwtEncodedString", jwtEncodedString);
 
             try
@@ -332,19 +383,39 @@ namespace System.IdentityModel.Tokens.Jwt
                 IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10717, tokenParts[0]);
                 Header = JwtHeader.Base64UrlDeserialize(tokenParts[0]);
 
-                // if present, "typ" should be set to "JWT" or "http://openid.net/specs/jwt/1.0"
-                string type = Header.Typ;
-                if (type != null)
+                if (Header == null)
                 {
-                    if (!(StringComparer.Ordinal.Equals(type, JwtConstants.HeaderType) || StringComparer.Ordinal.Equals(type, JwtConstants.HeaderTypeAlt)))
-                        throw LogHelper.LogException<SecurityTokenException>(LogMessages.IDX10702, JwtConstants.HeaderType, JwtConstants.HeaderTypeAlt, type);
+                    IsJwe = true;
+                    JweHeader = JweHeader.Base64UrlDeserialize(tokenParts[0]);
+                    // if present, "typ" should be set to "JWT" or "http://openid.net/specs/jwt/1.0"
+                    if (JweHeader.Typ != null)
+                    {
+                        if (!(StringComparer.Ordinal.Equals(JweHeader.Typ, JwtConstants.HeaderType) || StringComparer.Ordinal.Equals(JweHeader.Typ, JwtConstants.HeaderTypeAlt)))
+                            throw LogHelper.LogException<SecurityTokenException>(LogMessages.IDX10702, JwtConstants.HeaderType, JwtConstants.HeaderTypeAlt, JweHeader.Typ);
+                    }
+                    DecodeJwe(jwtEncodedString, tokenParts);
+                }
+                else
+                {
+                    IsJwe = false;
+
+                    // if present, "typ" should be set to "JWT" or "http://openid.net/specs/jwt/1.0"
+                    if (Header.Typ != null)
+                    {
+                        if (!(StringComparer.Ordinal.Equals(Header.Typ, JwtConstants.HeaderType) || StringComparer.Ordinal.Equals(Header.Typ, JwtConstants.HeaderTypeAlt)))
+                            throw LogHelper.LogException<SecurityTokenException>(LogMessages.IDX10702, JwtConstants.HeaderType, JwtConstants.HeaderTypeAlt, Header.Typ);
+                    }
+                    DecodeJws(jwtEncodedString, tokenParts);
                 }
             }
             catch (Exception ex)
             {
                 throw LogHelper.LogException<ArgumentException>(ex, LogMessages.IDX10703, "header", tokenParts[0], jwtEncodedString);
             }
+        }
 
+        private void DecodeJws(string jwtEncodedString, string[] tokenParts)
+        {
             try
             {
                 IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10718, tokenParts[1]);
@@ -371,6 +442,56 @@ namespace System.IdentityModel.Tokens.Jwt
             RawHeader = tokenParts[0];
             RawPayload = tokenParts[1];
             RawSignature = tokenParts[2];
+        }
+
+        private void DecodeJwe(string jwtEncodedString, string[] tokenParts)
+        {
+            // jwe encrypted key
+            try
+            {
+                IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10718, tokenParts[1]);
+                JweEncryptedKey = Base64UrlEncoder.Decode(tokenParts[1]);
+            }
+            catch (Exception ex)
+            {
+                throw LogHelper.LogException<ArgumentException>(ex, LogMessages.IDX10703, "jwe encrypted key", tokenParts[1], jwtEncodedString);
+            }
+
+            // initialization vector
+            try
+            {
+                IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10718, tokenParts[2]);
+                InitializationVector = Encoding.UTF8.GetBytes(Base64UrlEncoder.Decode(tokenParts[2]));
+            }
+            catch (Exception ex)
+            {
+                throw LogHelper.LogException<ArgumentException>(ex, LogMessages.IDX10703, "InitializationVector", tokenParts[2], jwtEncodedString);
+            }
+
+            // payload
+            try
+            {
+                IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10718, tokenParts[3]);
+                CipherText = Base64UrlEncoder.Decode(tokenParts[3]);
+            }
+            catch (Exception ex)
+            {
+                throw LogHelper.LogException<ArgumentException>(ex, LogMessages.IDX10703, "CipherText", tokenParts[3], jwtEncodedString);
+            }
+
+            // authentication tag
+            try
+            {
+                IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10718, tokenParts[4]);
+                AuthenticationTag = Base64UrlEncoder.Decode(tokenParts[4]);
+            }
+            catch (Exception ex)
+            {
+                throw LogHelper.LogException<ArgumentException>(ex, LogMessages.IDX10703, "payload", tokenParts[4], jwtEncodedString);
+            }
+
+            RawData = jwtEncodedString;
+            RawPayload = tokenParts[3];
         }
     }
 }

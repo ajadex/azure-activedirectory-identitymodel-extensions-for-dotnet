@@ -84,13 +84,17 @@ namespace System.IdentityModel.Tokens
     /// <param name="validationParameters"><see cref="TokenValidationParameters"/> required for validation.</param>
     public delegate SecurityToken SignatureValidator(string token, TokenValidationParameters validationParameters);
 
+    public delegate string DecryptCipherText(SecurityToken securityToken, SecurityKey contentEncryptionKey, TokenValidationParameters validationParameters);
+    public delegate IEnumerable<SecurityKey> EncryptionKeyResolver(string token, SecurityToken securityToken, string kid, TokenValidationParameters validationParameters);
+
+
     /// <summary>
     /// Contains a set of parameters that are used by a <see cref="SecurityTokenHandler"/> when validating a <see cref="SecurityToken"/>.
     /// </summary>
     public class TokenValidationParameters
     {
         private string _authenticationType;
-        private IList<SecurityToken> _clientDecryptionTokens = new List<SecurityToken>();
+        private IList<SecurityKey> _clientDecryptionKeys = new List<SecurityKey>();
         private TimeSpan _clockSkew = DefaultClockSkew;
         private string _nameClaimType = ClaimsIdentity.DefaultNameClaimType;
         private string _roleClaimType = ClaimsIdentity.DefaultRoleClaimType;
@@ -125,7 +129,7 @@ namespace System.IdentityModel.Tokens
             AudienceValidator = other.AudienceValidator;
             _authenticationType = other._authenticationType;
             ClockSkew = other.ClockSkew;
-            ClientDecryptionTokens = other.ClientDecryptionTokens;
+            ClientDecryptionKeys = other.ClientDecryptionKeys;
             IssuerSigningKey = other.IssuerSigningKey;
             IssuerSigningKeyResolver = other.IssuerSigningKeyResolver;
             IssuerSigningKeys = other.IssuerSigningKeys;
@@ -220,21 +224,21 @@ namespace System.IdentityModel.Tokens
         //}
 
         /// <summary>
-        /// Gets or sets the <see cref="ReadOnlyCollection{SecurityToken}"/> that is to be used for decrypting inbound tokens.
+        /// Gets or sets the <see cref="ReadOnlyCollection{SecurityKey}"/> that is to be used for decrypting inbound tokens.
         /// </summary>
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-        public IList<SecurityToken> ClientDecryptionTokens
+        public IList<SecurityKey> ClientDecryptionKeys
         {
             get
             {
-                return _clientDecryptionTokens;
+                return _clientDecryptionKeys;
             }
             set
             {
                 if (value == null)
                     throw new ArgumentNullException("ClientDecryptionTokens");
 
-                _clientDecryptionTokens = value;
+                _clientDecryptionKeys = value;
             }
         }
 
@@ -574,6 +578,18 @@ namespace System.IdentityModel.Tokens
         /// Gets or sets the <see cref="IEnumerable{String}"/> that contains valid issuers that will be used to check against the token's issuer.
         /// </summary>
         public IEnumerable<string> ValidIssuers
+        {
+            get;
+            set;
+        }
+
+        public DecryptCipherText DecryptCipherText
+        {
+            get;
+            set;
+        }
+
+        public EncryptionKeyResolver EncryptionKeyResolver
         {
             get;
             set;

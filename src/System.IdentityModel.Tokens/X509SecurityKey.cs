@@ -114,17 +114,6 @@ namespace System.IdentityModel.Tokens
             get { return _thisLock; }
         }
 
-        public override SignatureProvider GetSignatureProvider(string algorithm, bool verifyOnly)
-        {
-            if (string.IsNullOrWhiteSpace(algorithm))
-                throw LogHelper.LogArgumentNullException("algorithm");
-
-            if (verifyOnly)
-                return SignatureProviderFactory.CreateForVerifying(this, algorithm);
-            else
-                return SignatureProviderFactory.CreateForSigning(this, algorithm);
-        }
-
         public override bool HasPrivateKey
         {
             get
