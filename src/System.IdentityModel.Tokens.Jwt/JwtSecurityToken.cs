@@ -375,7 +375,7 @@ namespace System.IdentityModel.Tokens.Jwt
         {
             IdentityModelEventSource.Logger.WriteInformation(LogMessages.IDX10716, jwtEncodedString);
             string[] tokenParts = jwtEncodedString.Split(new char[] { '.' }, 5);
-            if (tokenParts.Length != 3 || tokenParts.Length != 5)
+            if (tokenParts.Length != 3 && tokenParts.Length != 5)
                 throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10709, "jwtEncodedString", jwtEncodedString);
 
             try
