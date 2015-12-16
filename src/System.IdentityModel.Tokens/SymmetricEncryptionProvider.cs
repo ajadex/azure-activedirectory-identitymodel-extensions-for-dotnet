@@ -32,35 +32,29 @@ namespace System.IdentityModel.Tokens
 {
     public class SymmetricEncryptionProvider : EncryptionProvider
     {
-        public SymmetricEncryptionProvider(SymmetricSecurityKey key, string algorithm, byte[] iv) : this(key, algorithm, iv, null) { }
-
-        public SymmetricEncryptionProvider(SymmetricSecurityKey key, string algorithm, byte[] iv, string authenticationTag) : base(key, algorithm)
+        public SymmetricEncryptionProvider(SymmetricSecurityKey key, string algorithm) : base(key, algorithm)
         {
             if (key == null)
                 throw LogHelper.LogException<ArgumentNullException>("key");
 
-            InitializationVector = iv;
-            AuthenticationTag = authenticationTag;
-
 #if DOTNET5_4
-            ResolveDotNetCoreEncryptionProvider(key, algorithm, iv);
+            ResolveDotNetCoreEncryptionProvider(key, algorithm);
 #else
-            ResolveDesktopEncryptionProvider(key, algorithm, iv);
+            ResolveDesktopEncryptionProvider(key, algorithm);
 #endif
         }
 
 #if DOTNET5_4
-        private void ResolveDotNetCoreEncryptionProvider(SymmetricSecurityKey key, string algorithm, byte[] iv)
+        private void ResolveDotNetCoreEncryptionProvider(SymmetricSecurityKey key, string algorithm)
         {
             
         }
 #else
-        private void ResolveDesktopEncryptionProvider(SymmetricSecurityKey key, string algorithm, byte[] iv)
+        private void ResolveDesktopEncryptionProvider(SymmetricSecurityKey key, string algorithm)
         {
             throw new NotImplementedException();
         }
 #endif
-        public byte[] InitializationVector { get; private set; }
 
         public override byte[] Encrypt(byte[] input)
         {
@@ -72,7 +66,25 @@ namespace System.IdentityModel.Tokens
             return null;
         }
 
-        public string AuthenticationTag { get; set; }
+        public byte[] Encrypt(byte[] input, byte[] iv)
+        {
+            return null;
+        }
+
+        public byte[] Decrypt(byte[] input, byte[] iv)
+        {
+            return null;
+        }
+
+        public byte[] Encrypt(byte[] input, byte[] iv, string authenticationTag)
+        {
+            return null;
+        }
+
+        public byte[] Decrypt(byte[] input, byte[] iv, string authenticationTag)
+        {
+            return null;
+        }
 
         public bool IsSupportedAlgorithm(string algorithm)
         {

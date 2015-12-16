@@ -137,15 +137,15 @@ namespace System.IdentityModel.Tokens
                 if (asymmetricKey != null)
                 {
 #if DOTNET5_4
-                    return new AsymmetricEncryptionProvider(asymmetricKey, algorithm, RSAEncryptionPadding.OaepSHA256);
+                    return new AsymmetricEncryptionProvider(asymmetricKey, algorithm);
 #else
-                    return new AsymmetricEncryptionProvider(asymmetricKey, algorithm, true);
+                    return new AsymmetricEncryptionProvider(asymmetricKey, algorithm);
 #endif
                 }
 
                 SymmetricSecurityKey symmetricKey = key as SymmetricSecurityKey;
                 if (symmetricKey != null)
-                    return new SymmetricEncryptionProvider(symmetricKey, algorithm, null);
+                    return new SymmetricEncryptionProvider(symmetricKey, algorithm);
             }
             throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10600, typeof(SignatureProvider), typeof(SecurityKey), typeof(AsymmetricSecurityKey), typeof(SymmetricSecurityKey), key.GetType());
         }

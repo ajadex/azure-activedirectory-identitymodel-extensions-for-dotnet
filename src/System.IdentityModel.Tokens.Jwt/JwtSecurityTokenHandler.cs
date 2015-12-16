@@ -675,9 +675,8 @@ namespace System.IdentityModel.Tokens.Jwt
                 }
                 else
                 {
-                    SymmetricEncryptionProvider encryptionProvider = new SymmetricEncryptionProvider(contentEncryptionKey, jwt.JweHeader.Enc, jwt.InitializationVector);
-                    encryptionProvider.AuthenticationTag = jwt.AuthenticationTag;
-                    byte[] plainTextBytes = encryptionProvider.Decrypt(Encoding.UTF8.GetBytes(jwt.CipherText));
+                    SymmetricEncryptionProvider encryptionProvider = new SymmetricEncryptionProvider(contentEncryptionKey, jwt.JweHeader.Enc);
+                    byte[] plainTextBytes = encryptionProvider.Decrypt(Encoding.UTF8.GetBytes(jwt.CipherText), jwt.InitializationVector, jwt.AuthenticationTag);
                     if (plainTextBytes != null)
                         plainText = Encoding.UTF8.GetString(plainTextBytes);
                 }
