@@ -49,7 +49,7 @@ namespace System.IdentityModel.Tokens
     /// <param name="kid">a key identifier. It may be null.</param>
     /// <param name="validationParameters"><see cref="TokenValidationParameters"/> required for validation.</param>
     /// <returns>A <see cref="SecurityKey"/> to use when validating a signature.</returns>
-    public delegate IEnumerable<SecurityKey> IssuerSigningKeyResolver(string token, SecurityToken securityToken, string kid, TokenValidationParameters validationParameters);
+    public delegate IEnumerable<SecurityKey> IssuerSigningKeyResolver(SecurityToken securityToken, string kid, TokenValidationParameters validationParameters);
 
     /// <summary>
     /// Definition for IssuerSigningKeyValidator.
@@ -82,7 +82,7 @@ namespace System.IdentityModel.Tokens
     /// </summary>
     /// <param name="token">A securityToken with a signature.</param>
     /// <param name="validationParameters"><see cref="TokenValidationParameters"/> required for validation.</param>
-    public delegate SecurityToken SignatureValidator(string token, TokenValidationParameters validationParameters);
+    public delegate SecurityKey SignatureValidator(SecurityToken token, TokenValidationParameters validationParameters);
 
     public delegate string DecryptCipherText(SecurityToken securityToken, SecurityKey contentEncryptionKey, TokenValidationParameters validationParameters);
     public delegate IEnumerable<SecurityKey> EncryptionKeyResolver(string token, SecurityToken securityToken, string kid, TokenValidationParameters validationParameters);

@@ -161,7 +161,7 @@ namespace System.IdentityModel.Tokens.Jwt
             CipherText = payload;
             AuthenticationTag = authenticationTag;
             InitializationVector = iv;
-            JweEncryptedKey = jweEncryptedKey;
+            EncryptedContentEncryptionKey = jweEncryptedKey;
         }
 
         public JwtSecurityToken(JweHeader header, string jweEncryptedKey, byte[] iv, JwtPayload payload, string authenticationTag)
@@ -176,7 +176,27 @@ namespace System.IdentityModel.Tokens.Jwt
             Payload = payload;
             AuthenticationTag = authenticationTag;
             InitializationVector = iv;
-            JweEncryptedKey = jweEncryptedKey;
+            EncryptedContentEncryptionKey = jweEncryptedKey;
+        }
+
+        public JwtSecurityToken(JwtHeader jwtHeader, JwtPayload payload, string rawSignature, JweHeader jweHeader, string jweEncryptedKey, byte[] iv, string authenticationTag)
+        {
+            if (jwtHeader == null)
+                throw LogHelper.LogArgumentNullException("header");
+
+            if (jweHeader == null)
+                throw LogHelper.LogArgumentNullException("header");
+
+            if (payload == null)
+                throw LogHelper.LogArgumentNullException("payload");
+
+            Header = jwtHeader;
+            JweHeader = jweHeader;
+            Payload = payload;
+            AuthenticationTag = authenticationTag;
+            InitializationVector = iv;
+            EncryptedContentEncryptionKey = jweEncryptedKey;
+            RawSignature = rawSignature;
         }
 
         /// <summary>
@@ -342,7 +362,7 @@ namespace System.IdentityModel.Tokens.Jwt
 
         public byte[] InitializationVector { get; private set; }
 
-        public string JweEncryptedKey { get; private set; }
+        public string EncryptedContentEncryptionKey { get; private set; }
 
         public string CipherText { get; private set; }
 
@@ -355,6 +375,10 @@ namespace System.IdentityModel.Tokens.Jwt
         {
             get { return JweHeader.EncryptingCredentials;  }
         }
+
+        public SecurityKey KeyEncryptionKey { get; set; }
+
+        public SecurityKey ContentEncryptionKey { get; set; }
 
         public bool IsJwe { get; set; }
 
@@ -450,7 +474,7 @@ namespace System.IdentityModel.Tokens.Jwt
             try
             {
                 IdentityModelEventSource.Logger.WriteVerbose(LogMessages.IDX10718, tokenParts[1]);
-                JweEncryptedKey = Base64UrlEncoder.Decode(tokenParts[1]);
+                EncryptedContentEncryptionKey = Base64UrlEncoder.Decode(tokenParts[1]);
             }
             catch (Exception ex)
             {
