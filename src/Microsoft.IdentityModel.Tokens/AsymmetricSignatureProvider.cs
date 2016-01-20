@@ -461,19 +461,19 @@ namespace Microsoft.IdentityModel.Tokens
             KeyBlobMagicNumber magicNumber;
             switch (curveId)
             {
-                case "P-256":
+                case JsonWebKeyECTypes.P256:
                     if (willCreateSignatures)
                         magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P256_MAGIC;
                     else
                         magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
                     break;
-                case "P-384":
+                case JsonWebKeyECTypes.P384:
                     if (willCreateSignatures)
                         magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P384_MAGIC;
                     else
                         magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P384_MAGIC;
                     break;
-                case "P-512":
+                case JsonWebKeyECTypes.P512:
                     if (willCreateSignatures)
                         magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PRIVATE_P521_MAGIC;
                     else
