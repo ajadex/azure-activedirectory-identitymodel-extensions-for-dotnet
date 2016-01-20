@@ -417,6 +417,7 @@ namespace Microsoft.IdentityModel.Tokens
                     _ecdsaCng = new ECDsaCng(cngKey);
                 }
             }
+            keyBlobHandle.Free();
         }
 
         /// <summary>
@@ -432,17 +433,17 @@ namespace Microsoft.IdentityModel.Tokens
             uint keyByteCount;
             switch (curveId)
             {
-                case "P-256":
+                case JsonWebKeyECTypes.P256:
                     keyByteCount = 32;
                     break;
-                case "P-384":
+                case JsonWebKeyECTypes.P384:
                     keyByteCount = 48;
                     break;
-                case "P-512":
+                case JsonWebKeyECTypes.P512:
                     keyByteCount = 64;
                     break;
                 default:
-                    throw LogHelper.LogException<ArgumentException>("Curve not supported");
+                    throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10645, curveId);
             }
             return keyByteCount;
         }
@@ -480,7 +481,7 @@ namespace Microsoft.IdentityModel.Tokens
                         magicNumber = KeyBlobMagicNumber.BCRYPT_ECDSA_PUBLIC_P521_MAGIC;
                     break;
                 default:
-                    throw LogHelper.LogException<ArgumentException>("Curve not supported");
+                    throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10645, curveId);
             }
             return (uint)magicNumber;
         }
