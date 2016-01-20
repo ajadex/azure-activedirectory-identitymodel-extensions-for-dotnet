@@ -164,10 +164,9 @@ namespace Microsoft.IdentityModel.Tokens.Tests
 
             SignatureProviders_Sign_Variation(KeyingMaterial.JsonWebKeyRsa256, SecurityAlgorithms.RsaSha256Signature, rawBytes, ExpectedException.NoExceptionExpected, errors);
             SignatureProviders_Sign_Variation(KeyingMaterial.JsonWebKeyRsa256Public, SecurityAlgorithms.RsaSha256Signature, rawBytes, ExpectedException.InvalidOperationException("IDX10638:"), errors);
-#if DNXCORE50
             SignatureProviders_Sign_Variation(KeyingMaterial.JsonWebKeyEcdsa256, SecurityAlgorithms.ECDSA_SHA256, rawBytes, ExpectedException.NoExceptionExpected, errors);
             SignatureProviders_Sign_Variation(KeyingMaterial.JsonWebKeyEcdsa256Public, SecurityAlgorithms.ECDSA_SHA256, rawBytes, ExpectedException.InvalidOperationException("IDX10638:"), errors);
-#endif
+      
             // Symmetric
             SignatureProviders_Sign_Variation(KeyingMaterial.DefaultSymmetricSecurityKey_256, SecurityAlgorithms.HmacSha256Signature, null, ExpectedException.ArgumentNullException(), errors);
             SignatureProviders_Sign_Variation(KeyingMaterial.DefaultSymmetricSecurityKey_256, SecurityAlgorithms.HmacSha256Signature, new byte[0], ExpectedException.ArgumentException("IDX10624:"), errors);
@@ -239,10 +238,8 @@ namespace Microsoft.IdentityModel.Tokens.Tests
             // constructing using jsonweb keys
             AsymmetricConstructorVariation("Signing:  - Creates with no errors", KeyingMaterial.JsonWebKeyRsa256, SecurityAlgorithms.RSA_SHA256, ExpectedException.NoExceptionExpected);
             AsymmetricConstructorVariation("Verifying:  - Creates with no errors", KeyingMaterial.JsonWebKeyRsa256Public, SecurityAlgorithms.RSA_SHA256, ExpectedException.NoExceptionExpected);
-#if DNXCORE50
             AsymmetricConstructorVariation("Signing:  - Creates with no errors", KeyingMaterial.JsonWebKeyEcdsa256, SecurityAlgorithms.ECDSA_SHA256, ExpectedException.NoExceptionExpected);
             AsymmetricConstructorVariation("Verifying:  - Creates with no errors", KeyingMaterial.JsonWebKeyEcdsa256Public, SecurityAlgorithms.ECDSA_SHA256, ExpectedException.NoExceptionExpected);
-#endif
         }
 
         private void AsymmetricConstructorVariation(string testcase, AsymmetricSecurityKey key, string algorithm, ExpectedException expectedException)
@@ -275,12 +272,12 @@ namespace Microsoft.IdentityModel.Tokens.Tests
 
             foreach (var algorithm in
                 new string[] {
-                    JwtAlgorithms.ECDSA_SHA256,
-                    JwtAlgorithms.ECDSA_SHA384,
-                    JwtAlgorithms.ECDSA_SHA512,
-                    JwtAlgorithms.RSA_SHA256,
-                    JwtAlgorithms.RSA_SHA384,
-                    JwtAlgorithms.RSA_SHA512,
+                    SecurityAlgorithms.ECDSA_SHA256,
+                    SecurityAlgorithms.ECDSA_SHA384,
+                    SecurityAlgorithms.ECDSA_SHA512,
+                    SecurityAlgorithms.RSA_SHA256,
+                    SecurityAlgorithms.RSA_SHA384,
+                    SecurityAlgorithms.RSA_SHA512,
                     SecurityAlgorithms.RsaSha256Signature,
                     SecurityAlgorithms.RsaSha384Signature,
                     SecurityAlgorithms.RsaSha512Signature })
@@ -355,11 +352,10 @@ namespace Microsoft.IdentityModel.Tokens.Tests
             signature = GetSignature(KeyingMaterial.ECDsa384Key, SecurityAlgorithms.ECDSA_SHA384, rawBytes);
             AsymmetricSignatureProviders_Verify_Variation(KeyingMaterial.ECDsa384Key, SecurityAlgorithms.ECDSA_SHA384, rawBytes, signature, ExpectedException.NoExceptionExpected, errors, true);
 
-#if DNXCORE50
             signature = GetSignature(KeyingMaterial.JsonWebKeyEcdsa256, SecurityAlgorithms.ECDSA_SHA256, rawBytes);
             AsymmetricSignatureProviders_Verify_Variation(KeyingMaterial.JsonWebKeyEcdsa256, SecurityAlgorithms.ECDSA_SHA256, rawBytes, signature, ExpectedException.NoExceptionExpected, errors, true);
             AsymmetricSignatureProviders_Verify_Variation(KeyingMaterial.JsonWebKeyEcdsa256Public, SecurityAlgorithms.ECDSA_SHA256, rawBytes, signature, ExpectedException.NoExceptionExpected, errors, true);
-#endif
+
             signature = GetSignature(KeyingMaterial.JsonWebKeyRsa256, SecurityAlgorithms.RSA_SHA256, rawBytes);
             AsymmetricSignatureProviders_Verify_Variation(KeyingMaterial.JsonWebKeyRsa256, SecurityAlgorithms.RSA_SHA256, rawBytes, signature, ExpectedException.NoExceptionExpected, errors, true);
             AsymmetricSignatureProviders_Verify_Variation(KeyingMaterial.JsonWebKeyRsa256Public, SecurityAlgorithms.RSA_SHA256, rawBytes, signature, ExpectedException.NoExceptionExpected, errors, true);

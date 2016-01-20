@@ -25,32 +25,18 @@
 //
 //------------------------------------------------------------------------------
 
-using Xunit;
-
-namespace System.IdentityModel.Tokens.Jwt.Tests
+namespace Microsoft.IdentityModel.Tokens
 {
-    public class JsonExtensionsTests
+    /// <summary>
+    /// Constants for JsonWebKey Elliptical Curve Types
+    /// https://tools.ietf.org/html/rfc7518#section-6.2.1.1
+    /// </summary>
+    public static class JsonWebKeyECTypes
     {
-        [Fact(DisplayName = "JsonExtensionsTests: Test json with duplicate names")]
-        public void TestJsonWithDuplicateNames()
-        {
-            try
-            {
-
-                string json = @"{""tag"":""value1"", ""tag"": ""value2""}";
-                var jsonObject = JsonExtensions.DeserializeFromJson<object>(json);
-            }
-            catch(Exception ex)
-            {
-                Assert.Equal(ex.GetType(), typeof(ArgumentException));
-                Assert.Contains("Property with the same name already exists on object.", ex.Message);
-            }
-        }
-
-        [Fact(DisplayName = "JsonExtensionsTests: Test malformed json")]
-        public void TestMalformedJson()
-        {
-            Assert.Throws<Newtonsoft.Json.JsonReaderException>(() => JsonExtensions.DeserializeFromJson<object>(@"{""tag"":""value""}ABCD"));
-        }
+#pragma warning disable 1591
+        public const string P256 = "P-256";
+        public const string P384 = "P-384";
+        public const string P512 = "P-512";
+#pragma warning restore 1591
     }
 }
