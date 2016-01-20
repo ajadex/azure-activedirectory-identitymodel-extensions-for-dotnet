@@ -280,7 +280,7 @@ namespace Microsoft.IdentityModel.Tokens
             }
         }
 
-        public override bool? HasPrivateKey
+        public override bool HasPrivateKey
         {
             get
             {

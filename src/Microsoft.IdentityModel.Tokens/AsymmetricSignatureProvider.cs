@@ -118,7 +118,7 @@ namespace Microsoft.IdentityModel.Tokens
             _minimumAsymmetricKeySizeInBitsForSigningMap = new Dictionary<string, int>(DefaultMinimumAsymmetricKeySizeInBitsForSigningMap);
             _minimumAsymmetricKeySizeInBitsForVerifyingMap = new Dictionary<string, int>(DefaultMinimumAsymmetricKeySizeInBitsForVerifyingMap);
             ValidateAsymmetricSecurityKeySize(key, algorithm, willCreateSignatures);
-            if (willCreateSignatures && !key.HasPrivateKey.Value)
+            if (willCreateSignatures && !key.HasPrivateKey)
                 throw LogHelper.LogException<InvalidOperationException>(LogMessages.IDX10638, key);
 
             ResolveAsymmetricAlgorithm(key, algorithm, willCreateSignatures);
@@ -250,6 +250,9 @@ namespace Microsoft.IdentityModel.Tokens
             }
             else if (webKey.Kty == JsonWebAlgorithmsKeyTypes.EllipticCurve)
             {
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    throw new PlatformNotSupportedException();
+
                 CreateECDsaFromJsonWebKey(webKey, willCreateSignatures);
                 return;
             }
@@ -318,6 +321,9 @@ namespace Microsoft.IdentityModel.Tokens
             ECDsaSecurityKey ecdsaKey = key as ECDsaSecurityKey;
             if (ecdsaKey != null)
             {
+                if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                    throw new PlatformNotSupportedException();
+
                 if (ecdsaKey.ECDsa != null)
                 {
                     _ecdsaCng = ecdsaKey.ECDsa as ECDsaCng;
@@ -336,6 +342,9 @@ namespace Microsoft.IdentityModel.Tokens
             }
             else if (webKey.Kty == JsonWebAlgorithmsKeyTypes.EllipticCurve)
             {
+                if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                    throw new PlatformNotSupportedException();
+
                 CreateECDsaFromJsonWebKey(webKey, willCreateSignatures);
                 return;
             }
