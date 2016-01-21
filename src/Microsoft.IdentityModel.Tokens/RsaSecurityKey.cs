@@ -69,7 +69,7 @@ namespace Microsoft.IdentityModel.Tokens
 #else
                     RSACryptoServiceProvider rsaCryptoServiceProvider = Rsa as RSACryptoServiceProvider;
                     if (rsaCryptoServiceProvider != null)
-                        rsaCryptoServiceProvider.SignData(hash, SecurityAlgorithms.SHA256);
+                        rsaCryptoServiceProvider.SignData(hash, SecurityAlgorithms.Sha256);
                     else
                         Rsa.DecryptValue(hash);
 #endif

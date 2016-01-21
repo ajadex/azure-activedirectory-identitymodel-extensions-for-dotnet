@@ -59,12 +59,12 @@ namespace Microsoft.IdentityModel.Tokens
         /// </summary>
         public static readonly Dictionary<string, int> DefaultMinimumAsymmetricKeySizeInBitsForSigningMap = new Dictionary<string, int>()
         {
-            { SecurityAlgorithms.ECDSA_SHA256, 256 },
-            { SecurityAlgorithms.ECDSA_SHA384, 256 },
-            { SecurityAlgorithms.ECDSA_SHA512, 256 },
-            { SecurityAlgorithms.RSA_SHA256, 2048 },
-            { SecurityAlgorithms.RSA_SHA384, 2048 },
-            { SecurityAlgorithms.RSA_SHA512, 2048 },
+            { SecurityAlgorithms.EcdsaSha256, 256 },
+            { SecurityAlgorithms.EcdsaSha384, 256 },
+            { SecurityAlgorithms.EcdsaSha512, 256 },
+            { SecurityAlgorithms.RsaSha256, 2048 },
+            { SecurityAlgorithms.RsaSha384, 2048 },
+            { SecurityAlgorithms.RsaSha512, 2048 },
             { SecurityAlgorithms.RsaSha256Signature, 2048 },
             { SecurityAlgorithms.RsaSha384Signature, 2048 },
             { SecurityAlgorithms.RsaSha512Signature, 2048 }
@@ -75,12 +75,12 @@ namespace Microsoft.IdentityModel.Tokens
         /// </summary>
         public static readonly Dictionary<string, int> DefaultMinimumAsymmetricKeySizeInBitsForVerifyingMap = new Dictionary<string, int>()
         {
-            { SecurityAlgorithms.ECDSA_SHA256, 256 },
-            { SecurityAlgorithms.ECDSA_SHA384, 256 },
-            { SecurityAlgorithms.ECDSA_SHA512, 256 },
-            { SecurityAlgorithms.RSA_SHA256, 1024 },
-            { SecurityAlgorithms.RSA_SHA384, 1024 },
-            { SecurityAlgorithms.RSA_SHA512, 1024 },
+            { SecurityAlgorithms.EcdsaSha256, 256 },
+            { SecurityAlgorithms.EcdsaSha384, 256 },
+            { SecurityAlgorithms.EcdsaSha512, 256 },
+            { SecurityAlgorithms.RsaSha256, 1024 },
+            { SecurityAlgorithms.RsaSha384, 1024 },
+            { SecurityAlgorithms.RsaSha512, 1024 },
             { SecurityAlgorithms.RsaSha256Signature, 1024 },
             { SecurityAlgorithms.RsaSha384Signature, 1024 },
             { SecurityAlgorithms.RsaSha512Signature, 1024 }
@@ -152,24 +152,23 @@ namespace Microsoft.IdentityModel.Tokens
             if (string.IsNullOrWhiteSpace(algorithm))
                 throw LogHelper.LogArgumentNullException("algorithm");
 
-
             switch (algorithm)
             {
-                case SecurityAlgorithms.SHA256:
-                case SecurityAlgorithms.ECDSA_SHA256:
-                case SecurityAlgorithms.RSA_SHA256:
+                case SecurityAlgorithms.Sha256:
+                case SecurityAlgorithms.EcdsaSha256:
+                case SecurityAlgorithms.RsaSha256:
                 case SecurityAlgorithms.RsaSha256Signature:
                     return HashAlgorithmName.SHA256;
 
-                case SecurityAlgorithms.SHA384:
-                case SecurityAlgorithms.ECDSA_SHA384:
-                case SecurityAlgorithms.RSA_SHA384:
+                case SecurityAlgorithms.Sha384:
+                case SecurityAlgorithms.EcdsaSha384:
+                case SecurityAlgorithms.RsaSha384:
                 case SecurityAlgorithms.RsaSha384Signature:
                     return HashAlgorithmName.SHA384;
 
-                case SecurityAlgorithms.SHA512:
-                case SecurityAlgorithms.ECDSA_SHA512:
-                case SecurityAlgorithms.RSA_SHA512:
+                case SecurityAlgorithms.Sha512:
+                case SecurityAlgorithms.EcdsaSha512:
+                case SecurityAlgorithms.RsaSha512:
                 case SecurityAlgorithms.RsaSha512Signature:
                     return HashAlgorithmName.SHA512;
             }
@@ -179,6 +178,12 @@ namespace Microsoft.IdentityModel.Tokens
 
         private void ResolveAsymmetricAlgorithm(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures)
         {
+            if (key == null)
+                throw LogHelper.LogArgumentNullException("key");
+
+            if (string.IsNullOrWhiteSpace(algorithm))
+                throw LogHelper.LogArgumentNullException("algorithm");
+
             _hashAlgorithm = GetHashAlgorithmName(algorithm);
             RsaSecurityKey rsaKey = key as RsaSecurityKey;
 
@@ -263,27 +268,27 @@ namespace Microsoft.IdentityModel.Tokens
         protected virtual string GetHashAlgorithmString(string algorithm)
         {
             if (string.IsNullOrWhiteSpace(algorithm))
-                throw LogHelper.LogException<ArgumentOutOfRangeException>(LogMessages.IDX10000, "algorithm");
+                throw LogHelper.LogArgumentNullException("algorithm");
 
             switch (algorithm)
             {
-                case SecurityAlgorithms.SHA256:
-                case SecurityAlgorithms.ECDSA_SHA256:
-                case SecurityAlgorithms.RSA_SHA256:
+                case SecurityAlgorithms.Sha256:
+                case SecurityAlgorithms.EcdsaSha256:
+                case SecurityAlgorithms.RsaSha256:
                 case SecurityAlgorithms.RsaSha256Signature:
-                    return SecurityAlgorithms.SHA256;
+                    return SecurityAlgorithms.Sha256;
 
-                case SecurityAlgorithms.SHA384:
-                case SecurityAlgorithms.ECDSA_SHA384:
-                case SecurityAlgorithms.RSA_SHA384:
+                case SecurityAlgorithms.Sha384:
+                case SecurityAlgorithms.EcdsaSha384:
+                case SecurityAlgorithms.RsaSha384:
                 case SecurityAlgorithms.RsaSha384Signature:
-                    return SecurityAlgorithms.SHA384;
+                    return SecurityAlgorithms.Sha384;
 
-                case SecurityAlgorithms.SHA512:
-                case SecurityAlgorithms.ECDSA_SHA512:
-                case SecurityAlgorithms.RSA_SHA512:
+                case SecurityAlgorithms.Sha512:
+                case SecurityAlgorithms.EcdsaSha512:
+                case SecurityAlgorithms.RsaSha512:
                 case SecurityAlgorithms.RsaSha512Signature:
-                    return SecurityAlgorithms.SHA512;
+                    return SecurityAlgorithms.Sha512;
             }
 
             throw LogHelper.LogException<ArgumentOutOfRangeException>(LogMessages.IDX10640, algorithm);
@@ -291,6 +296,12 @@ namespace Microsoft.IdentityModel.Tokens
 
         private void ResolveAsymmetricAlgorithm(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures)
         {
+            if (key == null)
+                throw LogHelper.LogArgumentNullException("key");
+
+            if (string.IsNullOrWhiteSpace(algorithm))
+                throw LogHelper.LogArgumentNullException("algorithm");
+
             _hashAlgorithm = GetHashAlgorithmString(algorithm);
             RsaSecurityKey rsaKey = key as RsaSecurityKey;
 
@@ -355,6 +366,9 @@ namespace Microsoft.IdentityModel.Tokens
 
         private RSAParameters CreateRsaParametersFromJsonWebKey(JsonWebKey webKey, bool willCreateSignatures)
         {
+            if (webKey == null)
+                throw LogHelper.LogArgumentNullException(nameof(webKey));
+
             RSAParameters parameters;
             if (willCreateSignatures)
             {
@@ -383,6 +397,9 @@ namespace Microsoft.IdentityModel.Tokens
 
         private void CreateECDsaFromJsonWebKey(JsonWebKey webKey, bool willCreateSignatures)
         {
+            if (webKey == null)
+                throw LogHelper.LogArgumentNullException(nameof(webKey));
+
             uint dwMagic = GetMagicValue(webKey.Crv, willCreateSignatures);
             uint cbKey = GetKeyByteCount(webKey.Crv);
             byte[] keyBlob;
@@ -437,7 +454,7 @@ namespace Microsoft.IdentityModel.Tokens
         private uint GetKeyByteCount(string curveId)
         {
             if (string.IsNullOrEmpty(curveId))
-                throw LogHelper.LogArgumentNullException("curveId");
+                throw LogHelper.LogArgumentNullException(nameof(curveId));
 
             uint keyByteCount;
             switch (curveId)
@@ -466,7 +483,7 @@ namespace Microsoft.IdentityModel.Tokens
         private uint GetMagicValue(string curveId, bool willCreateSignatures)
         {
             if (string.IsNullOrEmpty(curveId))
-                throw LogHelper.LogArgumentNullException("curveId");
+                throw LogHelper.LogArgumentNullException(nameof(curveId));
 
             KeyBlobMagicNumber magicNumber;
             switch (curveId)
@@ -496,7 +513,7 @@ namespace Microsoft.IdentityModel.Tokens
         }
 
         /// <summary>
-        ///     Magic numbers identifying ECDSA blob types
+        /// Magic numbers identifying ECDSA blob types
         /// </summary>
         internal enum KeyBlobMagicNumber : int
         {
@@ -515,15 +532,15 @@ namespace Microsoft.IdentityModel.Tokens
 
             switch (algorithm)
             {
-                case SecurityAlgorithms.SHA256:
-                case SecurityAlgorithms.SHA384:
-                case SecurityAlgorithms.SHA512:
-                case SecurityAlgorithms.ECDSA_SHA256:
-                case SecurityAlgorithms.ECDSA_SHA384:
-                case SecurityAlgorithms.ECDSA_SHA512:
-                case SecurityAlgorithms.RSA_SHA256:
-                case SecurityAlgorithms.RSA_SHA384:
-                case SecurityAlgorithms.RSA_SHA512:
+                case SecurityAlgorithms.Sha256:
+                case SecurityAlgorithms.Sha384:
+                case SecurityAlgorithms.Sha512:
+                case SecurityAlgorithms.EcdsaSha256:
+                case SecurityAlgorithms.EcdsaSha384:
+                case SecurityAlgorithms.EcdsaSha512:
+                case SecurityAlgorithms.RsaSha256:
+                case SecurityAlgorithms.RsaSha384:
+                case SecurityAlgorithms.RsaSha512:
                 case SecurityAlgorithms.RsaSha256Signature:
                 case SecurityAlgorithms.RsaSha384Signature:
                 case SecurityAlgorithms.RsaSha512Signature:
