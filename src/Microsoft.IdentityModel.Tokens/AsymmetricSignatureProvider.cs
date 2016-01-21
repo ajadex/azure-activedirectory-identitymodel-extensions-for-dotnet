@@ -86,6 +86,11 @@ namespace Microsoft.IdentityModel.Tokens
             { SecurityAlgorithms.RsaSha512Signature, 1024 }
         };
 
+        public AsymmetricSignatureProvider(AsymmetricSecurityKey key, string algorithm)
+            : this(key, algorithm, false, null)
+        {
+        }
+
         public AsymmetricSignatureProvider(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures)
             : this(key, algorithm, willCreateSignatures, null)
         {
