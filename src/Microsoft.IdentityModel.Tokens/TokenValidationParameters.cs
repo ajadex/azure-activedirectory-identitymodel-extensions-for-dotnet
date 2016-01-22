@@ -94,7 +94,7 @@ namespace Microsoft.IdentityModel.Tokens
         private TimeSpan _clockSkew = DefaultClockSkew;
         private string _nameClaimType = ClaimsIdentity.DefaultNameClaimType;
         private string _roleClaimType = ClaimsIdentity.DefaultRoleClaimType;
-        private CryptoProviderFactory _cryptoProviderFactory;
+        private CryptoProviderFactory _cryptoProviderFactory = CryptoProviderFactory.Default;
 
         /// <summary>
         /// This is the fallback authenticationtype that a <see cref="ISecurityTokenValidator"/> will use if nothing is set.
@@ -126,6 +126,7 @@ namespace Microsoft.IdentityModel.Tokens
             AudienceValidator = other.AudienceValidator;
             _authenticationType = other._authenticationType;
             ClockSkew = other.ClockSkew;
+            CryptoProviderFactory = other.CryptoProviderFactory;
             IssuerSigningKey = other.IssuerSigningKey;
             IssuerSigningKeyResolver = other.IssuerSigningKeyResolver;
             IssuerSigningKeys = other.IssuerSigningKeys;
@@ -295,6 +296,7 @@ namespace Microsoft.IdentityModel.Tokens
             {
                 if (value == null)
                     throw LogHelper.LogException<ArgumentNullException>(LogMessages.IDX10001, nameof(CryptoProviderFactory));
+
                 _cryptoProviderFactory = value;
             }
         }

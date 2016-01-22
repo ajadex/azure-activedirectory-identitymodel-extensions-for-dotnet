@@ -73,24 +73,29 @@ namespace Microsoft.IdentityModel.Tokens
             if (key.KeySize < MinimumSymmetricKeySizeInBits)
                 throw LogHelper.LogException<ArgumentOutOfRangeException>(LogMessages.IDX10603, (algorithm ?? "null"), MinimumSymmetricKeySizeInBits, key.KeySize);
 
-            _keyedHash = GetKeyedHashAlgorithm(algorithm);
-
             try
             {
+                byte[] keyBytes = null;
+
                 SymmetricSecurityKey symmetricSecurityKey = key as SymmetricSecurityKey;
                 if (symmetricSecurityKey != null)
-                    _keyedHash.Key = symmetricSecurityKey.Key;
+                    keyBytes = symmetricSecurityKey.Key;
                 else
                 {
                     JsonWebKey jsonWebKey = key as JsonWebKey;
-                    if (jsonWebKey != null)
-                        _keyedHash.Key = Base64UrlEncoder.DecodeBytes(jsonWebKey.K);
+                    if (jsonWebKey != null && jsonWebKey.K != null)
+                        keyBytes = Base64UrlEncoder.DecodeBytes(jsonWebKey.K);
                 }
+
+                _keyedHash = GetKeyedHashAlgorithm(algorithm, keyBytes);
             }
             catch (Exception ex)
             {
                 throw LogHelper.LogException<InvalidOperationException>(ex, LogMessages.IDX10634, key, (algorithm ?? "null"));
             }
+
+            if (_keyedHash == null)
+                throw LogHelper.LogException<ArgumentOutOfRangeException>(LogMessages.IDX10641, key);
         }
 
         /// <summary>
@@ -133,22 +138,25 @@ namespace Microsoft.IdentityModel.Tokens
 
         }
 
-        protected virtual KeyedHashAlgorithm GetKeyedHashAlgorithm(string algorithm)
+        protected virtual KeyedHashAlgorithm GetKeyedHashAlgorithm(string algorithm, byte[] key)
         {
             if (string.IsNullOrWhiteSpace(algorithm))
                 throw LogHelper.LogArgumentNullException("algorithm");
+
+            if (key == null)
+                throw LogHelper.LogArgumentNullException("key");
 
             switch (algorithm)
             {
                 case SecurityAlgorithms.HmacSha256Signature:
                 case SecurityAlgorithms.HmacSha256:
-                    return new HMACSHA256();
+                    return new HMACSHA256(key);
                 case SecurityAlgorithms.HmacSha384Signature:
                 case SecurityAlgorithms.HmacSha384:
-                    return new HMACSHA384();
+                    return new HMACSHA384(key);
                 case SecurityAlgorithms.HmacSha512Signature:
                 case SecurityAlgorithms.HmacSha512:
-                    return new HMACSHA512();
+                    return new HMACSHA512(key);
                 default:
                     throw LogHelper.LogException<ArgumentOutOfRangeException>(LogMessages.IDX10640, algorithm);
             }

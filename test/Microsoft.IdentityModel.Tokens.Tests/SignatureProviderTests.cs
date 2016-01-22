@@ -48,22 +48,29 @@ namespace Microsoft.IdentityModel.Tokens.Tests
             CryptoProviderFactory factory = new CryptoProviderFactory();
 
             // Asymmetric / Symmetric both need signature alg specified
-            FactoryCreateFor("Siging:    - algorithm string.Empty", KeyingMaterial.X509SecurityKey_1024, string.Empty, factory, ExpectedException.ArgumentException());
+            FactoryCreateFor("Signing:    - algorithm string.Empty", KeyingMaterial.X509SecurityKey_1024, string.Empty, factory, ExpectedException.ArgumentException());
             FactoryCreateFor("Verifying: - algorithm string.Empty", KeyingMaterial.X509SecurityKey_1024, string.Empty, factory, ExpectedException.ArgumentException());
 
+            // Json Web Keys
+            FactoryCreateFor("Signing: - No exception", KeyingMaterial.JsonWebKeyRsa256, SecurityAlgorithms.RsaSha256, factory, ExpectedException.NoExceptionExpected);
+            FactoryCreateFor("Signing: - security key without private key", KeyingMaterial.JsonWebKeyRsa256Public, SecurityAlgorithms.RsaSha256, factory, ExpectedException.InvalidOperationException("IDX10638:"));
+            FactoryCreateFor("Verifying: - No exception", KeyingMaterial.JsonWebKeyRsa256Public, SecurityAlgorithms.RsaSha256, factory, ExpectedException.NoExceptionExpected);
+            FactoryCreateFor("Signing: - No exception", KeyingMaterial.JsonWebKeySymmetric256, SecurityAlgorithms.HmacSha256, factory, ExpectedException.NoExceptionExpected);
+            FactoryCreateFor("Verifying: - No exception", KeyingMaterial.JsonWebKeySymmetric256, SecurityAlgorithms.HmacSha256, factory, ExpectedException.NoExceptionExpected);
+
             // Keytype not supported
-            FactoryCreateFor("Siging:    - SecurityKey type not Asymmetric or Symmetric", NotAsymmetricOrSymmetricSecurityKey.New, SecurityAlgorithms.HmacSha256Signature, factory, ExpectedException.ArgumentException("IDX10600:"));
+            FactoryCreateFor("Signing:    - SecurityKey type not Asymmetric or Symmetric", NotAsymmetricOrSymmetricSecurityKey.New, SecurityAlgorithms.HmacSha256Signature, factory, ExpectedException.ArgumentException("IDX10600:"));
             FactoryCreateFor("Verifying: - SecurityKey type not Asymmetric or Symmetric", NotAsymmetricOrSymmetricSecurityKey.New, SecurityAlgorithms.RsaSha256Signature, factory, ExpectedException.ArgumentException("IDX10600:"));
 
             // Private keys missing
-            FactoryCreateFor("Siging:    - SecurityKey without private key", KeyingMaterial.RsaSecurityKey_2048_Public, SecurityAlgorithms.RsaSha256Signature, factory, ExpectedException.InvalidOperationException(substringExpected: "IDX10638:"));
+            FactoryCreateFor("Signing:    - SecurityKey without private key", KeyingMaterial.RsaSecurityKey_2048_Public, SecurityAlgorithms.RsaSha256Signature, factory, ExpectedException.InvalidOperationException(substringExpected: "IDX10638:"));
             FactoryCreateFor("Verifying: - SecurityKey without private key", KeyingMaterial.RsaSecurityKey_2048_Public, SecurityAlgorithms.RsaSha256Signature, factory, ExpectedException.NoExceptionExpected);
-            FactoryCreateFor("Siging:    - SecurityKey without private key", KeyingMaterial.ECDsa256Key_Public, SecurityAlgorithms.EcdsaSha256, factory, ExpectedException.InvalidOperationException(substringExpected: "IDX10638:"));
+            FactoryCreateFor("Signing:    - SecurityKey without private key", KeyingMaterial.ECDsa256Key_Public, SecurityAlgorithms.EcdsaSha256, factory, ExpectedException.InvalidOperationException(substringExpected: "IDX10638:"));
 
             // Key size checks
-            FactoryCreateFor("Siging:    - AsymmetricKeySize Key to small", KeyingMaterial.X509SecurityKey_1024, SecurityAlgorithms.RsaSha256Signature, factory, ExpectedException.ArgumentOutOfRangeException("IDX10630:"));
+            FactoryCreateFor("Signing:    - AsymmetricKeySize Key to small", KeyingMaterial.X509SecurityKey_1024, SecurityAlgorithms.RsaSha256Signature, factory, ExpectedException.ArgumentOutOfRangeException("IDX10630:"));
 
-            FactoryCreateFor("Siging:    - SymmetricKeySize Key", KeyingMaterial.DefaultSymmetricSecurityKey_256, SecurityAlgorithms.HmacSha256Signature, factory, ExpectedException.NoExceptionExpected);
+            FactoryCreateFor("Signing:    - SymmetricKeySize Key", KeyingMaterial.DefaultSymmetricSecurityKey_256, SecurityAlgorithms.HmacSha256Signature, factory, ExpectedException.NoExceptionExpected);
             FactoryCreateFor("Verifying: - SymmetricKeySize Key", KeyingMaterial.DefaultSymmetricSecurityKey_256, SecurityAlgorithms.HmacSha256Signature, factory, ExpectedException.NoExceptionExpected);
         }
 
@@ -71,7 +78,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
         {
             try
             {
-                if (testcase.StartsWith("Siging"))
+                if (testcase.StartsWith("Signing"))
                 {
                     factory.CreateForSigning(key, algorithm);
                 }

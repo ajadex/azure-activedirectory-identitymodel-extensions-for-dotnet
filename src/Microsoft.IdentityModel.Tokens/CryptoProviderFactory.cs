@@ -121,6 +121,18 @@ namespace Microsoft.IdentityModel.Tokens
             if (symmetricKey != null)
                 return new SymmetricSignatureProvider(symmetricKey, algorithm);
 
+            JsonWebKey jsonWebKey = key as JsonWebKey;
+            if (jsonWebKey != null)
+            {
+                if (jsonWebKey.Kty != null)
+                {
+                    if (jsonWebKey.Kty == JsonWebAlgorithmsKeyTypes.RSA || jsonWebKey.Kty == JsonWebAlgorithmsKeyTypes.EllipticCurve)
+                        return new AsymmetricSignatureProvider(key, algorithm, willCreateSignatures, AsymmetricAlgorithmResolver);
+                    if (jsonWebKey.Kty == JsonWebAlgorithmsKeyTypes.Octet)
+                        return new SymmetricSignatureProvider(key, algorithm);
+                }
+            }
+
             throw LogHelper.LogException<ArgumentException>(LogMessages.IDX10600, typeof(SignatureProvider), typeof(SecurityKey), typeof(AsymmetricSecurityKey), typeof(SymmetricSecurityKey), key.GetType());
         }
     }
