@@ -37,7 +37,7 @@ namespace Microsoft.IdentityModel.Tokens
     /// <param name="securityKey"><see cref="SecurityKey"/> to use for the crypto operations.</param>
     /// <param name="algorithm">algorithm to use for the crypto operations</param>
     /// <returns><see cref="AsymmetricAlgorithm"/> to use for signing and/or verifying tokens.</returns>
-    public delegate AsymmetricAlgorithm AsymmetricAlgorithmResolver(AsymmetricSecurityKey securityKey, string algorithm, bool willCreateSignatures);
+    public delegate AsymmetricAlgorithm AsymmetricAlgorithmResolver(SecurityKey securityKey, string algorithm, bool willCreateSignatures);
 
     /// <summary>
     /// Creates <see cref="SignatureProvider"/>s by specifying a <see cref="SecurityKey"/> and algorithm.

@@ -86,12 +86,12 @@ namespace Microsoft.IdentityModel.Tokens
             { SecurityAlgorithms.RsaSha512Signature, 1024 }
         };
 
-        public AsymmetricSignatureProvider(AsymmetricSecurityKey key, string algorithm)
+        public AsymmetricSignatureProvider(SecurityKey key, string algorithm)
             : this(key, algorithm, false, null)
         {
         }
 
-        public AsymmetricSignatureProvider(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures)
+        public AsymmetricSignatureProvider(SecurityKey key, string algorithm, bool willCreateSignatures)
             : this(key, algorithm, willCreateSignatures, null)
         {
         }
@@ -99,25 +99,25 @@ namespace Microsoft.IdentityModel.Tokens
         /// <summary>
         /// Initializes a new instance of the <see cref="AsymmetricSignatureProvider"/> class used to create and verify signatures.
         /// </summary>
-        /// <param name="key">The <see cref="AsymmetricSecurityKey"/> that will be used for cryptographic operations.</param>
+        /// <param name="key">The <see cref="SecurityKey"/> that will be used for cryptographic operations.</param>
         /// <param name="algorithm">The signature algorithm to apply.</param>
         /// <param name="willCreateSignatures">If this <see cref="AsymmetricSignatureProvider"/> is required to create signatures then set this to true.
         /// <param name="asymmetricAlgorithmResolver">Delegate to resolve <see cref="AsymmetricAlgorithm"/> to use for crypto operations.</param>
         /// <para>
-        /// Creating signatures requires that the <see cref="AsymmetricSecurityKey"/> has access to a private key. 
+        /// Creating signatures requires that the <see cref="SecurityKey"/> has access to a private key.
         /// Verifying signatures (the default), does not require access to the private key.
         /// </para>
         /// </param>
         /// <exception cref="ArgumentNullException">'key' is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// willCreateSignatures is true and <see cref="AsymmetricSecurityKey"/>.KeySize is less than the size corresponding to the given algorithm in <see cref="CryptoProviderFactory.MinimumAsymmetricKeySizeInBitsForSigningMap"/>.
+        /// willCreateSignatures is true and <see cref="SecurityKey"/>.KeySize is less than the size corresponding to the given algorithm in <see cref="CryptoProviderFactory.MinimumAsymmetricKeySizeInBitsForSigningMap"/>.
         /// </exception>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// <see cref="AsymmetricSecurityKey"/>.KeySize is less than the size corresponding to the algorithm in <see cref="CryptoProviderFactory.MinimumAsymmetricKeySizeInBitsForVerifyingMap"/>. Note: this is always checked.
+        /// <see cref="SecurityKey"/>.KeySize is less than the size corresponding to the algorithm in <see cref="CryptoProviderFactory.MinimumAsymmetricKeySizeInBitsForVerifyingMap"/>. Note: this is always checked.
         /// </exception>
         /// <exception cref="ArgumentException">if 'algorithm" is not supported.</exception>
         /// <exception cref="ArgumentOutOfRangeException">if 'key' is not <see cref="RsaSecurityKey"/> or <see cref="X509SecurityKey"/>.</exception>
-        public AsymmetricSignatureProvider(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures, AsymmetricAlgorithmResolver asymmetricAlgorithmResolver)
+        public AsymmetricSignatureProvider(SecurityKey key, string algorithm, bool willCreateSignatures, AsymmetricAlgorithmResolver asymmetricAlgorithmResolver)
             : base(key, algorithm)
         {
             if (key == null)
@@ -129,7 +129,7 @@ namespace Microsoft.IdentityModel.Tokens
             _minimumAsymmetricKeySizeInBitsForSigningMap = new Dictionary<string, int>(DefaultMinimumAsymmetricKeySizeInBitsForSigningMap);
             _minimumAsymmetricKeySizeInBitsForVerifyingMap = new Dictionary<string, int>(DefaultMinimumAsymmetricKeySizeInBitsForVerifyingMap);
             ValidateAsymmetricSecurityKeySize(key, algorithm, willCreateSignatures);
-            if (willCreateSignatures && !key.HasPrivateKey)
+            if (willCreateSignatures && !HasPrivateKey(key))
                 throw LogHelper.LogException<InvalidOperationException>(LogMessages.IDX10638, key);
 
             if (asymmetricAlgorithmResolver != null)
@@ -177,6 +177,19 @@ namespace Microsoft.IdentityModel.Tokens
             }
         }
 
+        private bool HasPrivateKey(SecurityKey key)
+        {
+            AsymmetricSecurityKey asymmetricSecurityKey = key as AsymmetricSecurityKey;
+            if (asymmetricSecurityKey != null)
+                return asymmetricSecurityKey.HasPrivateKey;
+
+            JsonWebKey jsonWebKey = key as JsonWebKey;
+            if (jsonWebKey != null)
+                return jsonWebKey.HasPrivateKey;
+
+            return false;
+        }
+
 #if DOTNET5_4
         protected virtual HashAlgorithmName GetHashAlgorithmName(string algorithm)
         {
@@ -207,7 +220,7 @@ namespace Microsoft.IdentityModel.Tokens
             throw LogHelper.LogException<ArgumentOutOfRangeException>(LogMessages.IDX10640, algorithm);
         }
 
-        private void ResolveAsymmetricAlgorithm(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures)
+        private void ResolveAsymmetricAlgorithm(SecurityKey key, string algorithm, bool willCreateSignatures)
         {
             if (key == null)
                 throw LogHelper.LogArgumentNullException("key");
@@ -325,7 +338,7 @@ namespace Microsoft.IdentityModel.Tokens
             throw LogHelper.LogException<ArgumentOutOfRangeException>(LogMessages.IDX10640, algorithm);
         }
 
-        private void ResolveAsymmetricAlgorithm(AsymmetricSecurityKey key, string algorithm, bool willCreateSignatures)
+        private void ResolveAsymmetricAlgorithm(SecurityKey key, string algorithm, bool willCreateSignatures)
         {
             if (key == null)
                 throw LogHelper.LogArgumentNullException("key");
